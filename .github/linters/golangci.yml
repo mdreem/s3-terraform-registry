@@ -1,0 +1,24 @@
+linters:
+  enable:
+    - bodyclose
+    - depguard
+    - gocritic
+    - gofmt
+    - revive
+    - goprintffuncname
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - nolintlint
+    - rowserrcheck
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - varcheck
+    - whitespace
+    - unused
