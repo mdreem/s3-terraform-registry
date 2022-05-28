@@ -11,14 +11,6 @@ type ListObjects interface {
 	ListObjects() ([]string, error)
 }
 
-type Bucket struct {
-	bucketName string
-}
-
-func New(bucketName string) Bucket {
-	return Bucket{bucketName: bucketName}
-}
-
 func (bucket Bucket) ListObjects() ([]string, error) {
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String("eu-central-1"),

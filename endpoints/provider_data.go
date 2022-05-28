@@ -3,9 +3,8 @@ package endpoints
 import (
 	"bytes"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/mdreem/s3_terraform_registry/s3"
+
 	"github.com/mdreem/s3_terraform_registry/schema"
 	"io"
 	"io/ioutil"
@@ -27,7 +26,7 @@ type ProviderData interface {
 }
 
 type RegistryClient struct {
-	bucketName   string
+	bucket       s3.BucketReaderWriter
 	hostname     string
 	gpgPublicKey string
 	keyID        string
@@ -40,7 +39,7 @@ func NewS3Backend(bucketName string, hostname string, keyFile string, keyID stri
 	}
 
 	return RegistryClient{
-		bucketName:   bucketName,
+		bucket:       s3.New(bucketName),
 		hostname:     hostname,
 		gpgPublicKey: string(file),
 		keyID:        keyID,
@@ -48,14 +47,9 @@ func NewS3Backend(bucketName string, hostname string, keyFile string, keyID stri
 }
 
 func (client RegistryClient) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("eu-central-1"),
-	}))
-
-	svc := s3.New(sess)
-	objectList, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(client.bucketName)})
+	objects, err := client.bucket.ListObjects()
 	if err != nil {
-		log.Printf("ERROR: an error occurred when listing versions: %v\n", err)
+		log.Printf("ERROR: an error occurred when listing objects in S3: %v\n", err)
 		return schema.ProviderVersions{}, err
 	}
 
@@ -64,9 +58,9 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 
 	versions := make(map[string][]schema.Platform)
 
-	for _, item := range objectList.Contents {
-		if r.MatchString(*item.Key) {
-			result := r.FindAllStringSubmatch(*item.Key, -1)
+	for _, item := range objects {
+		if r.MatchString(item) {
+			result := r.FindAllStringSubmatch(item, -1)
 			matches := map[string]string{}
 			for i, n := range result[0] {
 				matches[names[i]] = n
@@ -82,7 +76,7 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 				continue
 			}
 
-			log.Println("INFO adding: ", *item.Key)
+			log.Println("INFO adding: ", item)
 
 			platforms := versions[matches["version"]]
 			platforms = append(platforms, schema.Platform{
@@ -111,19 +105,11 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 }
 
 func (client RegistryClient) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("eu-central-1"),
-	}))
-	svc := s3.New(sess)
-
 	basePath := fmt.Sprintf("%s/%s/%s/%s/%s", namespace, providerType, version, os, arch)
 	baseURL := fmt.Sprintf("https://%s/proxy/%s", client.hostname, basePath)
 	log.Printf("INFO fetching signature file: %s\n", fmt.Sprintf("%s/shasum", basePath))
 
-	object, err := svc.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(client.bucketName),
-		Key:    aws.String(fmt.Sprintf("%s/shasum", basePath)),
-	})
+	object, err := client.bucket.GetObject(fmt.Sprintf("%s/shasum", basePath))
 	if err != nil {
 		return schema.DownloadData{}, err
 	}
@@ -160,25 +146,17 @@ func (client RegistryClient) GetDownloadData(namespace string, providerType stri
 }
 
 func (client RegistryClient) Proxy(namespace string, providerType string, version string, os string, arch string, filename string) (ProxyResponse, error) {
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("eu-central-1"),
-	}))
-	svc := s3.New(sess)
-
 	basePath := fmt.Sprintf("%s/%s/%s/%s/%s", namespace, providerType, version, os, arch)
 	log.Printf("proxying file file: %s\n", fmt.Sprintf("%s/%s", basePath, filename))
 
-	object, err := svc.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(client.bucketName),
-		Key:    aws.String(fmt.Sprintf("%s/%s", basePath, filename)),
-	})
+	object, err := client.bucket.GetObject(fmt.Sprintf("%s/%s", basePath, filename))
 	if err != nil {
 		return ProxyResponse{}, err
 	}
 
 	return ProxyResponse{
 		Body:          object.Body,
-		ContentLength: *object.ContentLength,
-		ContentType:   *object.ContentType,
+		ContentLength: object.ContentLength,
+		ContentType:   object.ContentType,
 	}, nil
 }

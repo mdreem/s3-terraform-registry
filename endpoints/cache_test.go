@@ -1,9 +1,12 @@
 package endpoints
 
 import (
+	"fmt"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
+	"io"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -24,14 +27,35 @@ func defaultBucketContent() []string {
 
 type TestBucket struct {
 	entries []string
+	objects map[string]s3.BucketObject
 }
 
 func NewTestBucket(entries []string) TestBucket {
 	return TestBucket{entries: entries}
 }
 
+func NewTestBucketWithObjects(entries []string, objects map[string]s3.BucketObject) TestBucket {
+	return TestBucket{entries: entries, objects: objects}
+}
+
 func (bucket TestBucket) ListObjects() ([]string, error) {
 	return bucket.entries, nil
+}
+
+func (bucket TestBucket) GetObject(key string) (s3.BucketObject, error) {
+	object, ok := bucket.objects[key]
+	if ok {
+		return object, nil
+	}
+
+	stringReader := strings.NewReader("Object Data for: " + key)
+	stringReadCloser := io.NopCloser(stringReader)
+
+	return s3.BucketObject{
+		Body:          stringReadCloser,
+		ContentLength: int64(len(key)),
+		ContentType:   "ContentType: " + key,
+	}, nil
 }
 
 func NewTestProviderData() TestProviderData {
@@ -75,6 +99,111 @@ func defaultVersions() map[string]map[string]schema.ProviderVersions {
 				Warnings: nil,
 			},
 		},
+	}
+}
+
+func listVersionDataFor(namespace string, pType string) schema.ProviderVersions {
+	return schema.ProviderVersions{
+		ID: fmt.Sprintf("%s_%s", namespace, pType),
+		Versions: []schema.ProviderVersion{
+			{
+				Version:   "1.0.0",
+				Protocols: []string{"4.0", "5.0"},
+				Platforms: []schema.Platform{{
+					Os:   "linux",
+					Arch: "amd64",
+				}},
+			},
+			{
+				Version:   "1.0.1",
+				Protocols: []string{"4.0", "5.0"},
+				Platforms: []schema.Platform{{
+					Os:   "linux",
+					Arch: "amd64",
+				}},
+			},
+		},
+		Warnings: nil,
+	}
+}
+
+func listVersionsData() map[string]map[string]schema.ProviderVersions {
+	return map[string]map[string]schema.ProviderVersions{
+		"black": {
+			"lodge": listVersionDataFor("black", "lodge"),
+		},
+		"white": {
+			"lodge": listVersionDataFor("white", "lodge"),
+		},
+	}
+}
+
+func TestS3ProviderData_ListVersions(t *testing.T) {
+	type fields struct {
+		providerData ProviderData
+		cachedResult cachedResult
+		bucket       s3.ListObjects
+	}
+	type args struct {
+		namespace    string
+		providerType string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    schema.ProviderVersions
+		wantErr bool
+	}{
+		{
+			name: "fetch cached result for versions data",
+			fields: fields{
+				providerData: nil,
+				cachedResult: cachedResult{
+					versions: listVersionsData(),
+				},
+				bucket: nil,
+			},
+			args: args{
+				namespace:    "black",
+				providerType: "lodge",
+			},
+			want:    listVersionDataFor("black", "lodge"),
+			wantErr: false,
+		},
+		{
+			name: "fail to fetch cached result for versions data",
+			fields: fields{
+				providerData: nil,
+				cachedResult: cachedResult{
+					versions: listVersionsData(),
+				},
+				bucket: nil,
+			},
+			args: args{
+				namespace:    "twin",
+				providerType: "peaks",
+			},
+			want:    schema.ProviderVersions{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cache := S3ProviderData{
+				providerData: tt.fields.providerData,
+				cachedResult: tt.fields.cachedResult,
+				bucket:       tt.fields.bucket,
+			}
+			got, err := cache.ListVersions(tt.args.namespace, tt.args.providerType)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ListVersions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ListVersions() got = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
