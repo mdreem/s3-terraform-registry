@@ -2,7 +2,7 @@ package endpoints
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
+	"github.com/mdreem/s3_terraform_registry/logger"
 )
 
 func GetDownloadData(p ProviderData) func(c *gin.Context) {
@@ -13,11 +13,11 @@ func GetDownloadData(p ProviderData) func(c *gin.Context) {
 		os := c.Param("os")
 		arch := c.Param("arch")
 
-		log.Printf("called get download data with namespace=%s type=%s version=%s, os=%s arch=%s", namespace, pType, version, os, arch)
+		logger.Info("called get download data", "namespace", namespace, "type", pType, "version", version, "os", os, "arch", arch)
 
 		downloadData, err := p.GetDownloadData(namespace, pType, version, os, arch)
 		if err != nil {
-			log.Printf("ERROR: get download data returned: %v\n", err)
+			logger.Error("get download data returned error", "error", err)
 			c.String(500, "")
 			return
 		}

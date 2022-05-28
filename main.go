@@ -1,19 +1,25 @@
 package main
 
 import (
+	"github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/mdreem/s3_terraform_registry/endpoints"
-	"log"
+	"github.com/mdreem/s3_terraform_registry/logger"
 	"os"
+	"time"
 )
 
 var GitCommit string
 var Version string
 
 func main() {
-	log.Printf("s3_terraform_registry. Version: %s; Commit: %s", Version, GitCommit)
+	logger.Info("s3_terraform_registry. ", "Version", Version, "Commit", GitCommit)
 
-	r := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
+
+	r.Use(ginzap.Ginzap(logger.Logger, time.RFC3339, true))
+	r.Use(ginzap.RecoveryWithZap(logger.Logger, true))
 
 	s3Backend, err := endpoints.NewS3Backend(
 		os.Getenv("BUCKET_NAME"),

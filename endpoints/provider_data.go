@@ -3,12 +3,12 @@ package endpoints
 import (
 	"bytes"
 	"fmt"
+	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
 
 	"github.com/mdreem/s3_terraform_registry/schema"
 	"io"
 	"io/ioutil"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -49,7 +49,7 @@ func NewS3Backend(bucketName string, hostname string, keyFile string, keyID stri
 func (client RegistryClient) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
 	objects, err := client.bucket.ListObjects()
 	if err != nil {
-		log.Printf("ERROR: an error occurred when listing objects in S3: %v\n", err)
+		logger.Error("an error occurred when listing objects in S3", "error", err)
 		return schema.ProviderVersions{}, err
 	}
 
@@ -76,7 +76,7 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 				continue
 			}
 
-			log.Println("INFO adding: ", item)
+			logger.Info("list versions: adding", "item", item)
 
 			platforms := versions[matches["version"]]
 			platforms = append(platforms, schema.Platform{
@@ -107,7 +107,7 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 func (client RegistryClient) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
 	basePath := fmt.Sprintf("%s/%s/%s/%s/%s", namespace, providerType, version, os, arch)
 	baseURL := fmt.Sprintf("https://%s/proxy/%s", client.hostname, basePath)
-	log.Printf("INFO fetching signature file: %s\n", fmt.Sprintf("%s/shasum", basePath))
+	logger.Info("fetching signature file", "file", fmt.Sprintf("%s/shasum", basePath))
 
 	object, err := client.bucket.GetObject(fmt.Sprintf("%s/shasum", basePath))
 	if err != nil {
@@ -147,7 +147,7 @@ func (client RegistryClient) GetDownloadData(namespace string, providerType stri
 
 func (client RegistryClient) Proxy(namespace string, providerType string, version string, os string, arch string, filename string) (ProxyResponse, error) {
 	basePath := fmt.Sprintf("%s/%s/%s/%s/%s", namespace, providerType, version, os, arch)
-	log.Printf("proxying file file: %s\n", fmt.Sprintf("%s/%s", basePath, filename))
+	logger.Info("proxying file file", "file", fmt.Sprintf("%s/%s", basePath, filename))
 
 	object, err := client.bucket.GetObject(fmt.Sprintf("%s/%s", basePath, filename))
 	if err != nil {
