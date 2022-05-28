@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
-
 	"github.com/mdreem/s3_terraform_registry/schema"
 	"io"
 	"io/ioutil"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -96,6 +96,10 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 		}
 		providerVersions = append(providerVersions, providerVersion)
 	}
+
+	sort.Slice(providerVersions, func(i, j int) bool {
+		return providerVersions[i].Version < providerVersions[j].Version
+	})
 
 	return schema.ProviderVersions{
 		ID:       fmt.Sprintf("%s/%s", namespace, providerType),
