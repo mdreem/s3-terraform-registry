@@ -21,12 +21,28 @@ func main() {
 	r.Use(ginzap.Ginzap(logger.Logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logger.Logger, true))
 
-	s3Backend, err := endpoints.NewS3Backend(
-		os.Getenv("BUCKET_NAME"),
-		os.Getenv("HOSTNAME"),
-		os.Getenv("KEYFILE"),
-		os.Getenv("KEY_ID"),
-	)
+	bucketName := os.Getenv("BUCKET_NAME")
+	if bucketName == "" {
+		logger.Error("BUCKET_NAME not set")
+		os.Exit(1)
+	}
+	hostname := os.Getenv("HOSTNAME")
+	if hostname == "" {
+		logger.Error("HOSTNAME not set")
+		os.Exit(1)
+	}
+	keyfile := os.Getenv("KEYFILE")
+	if keyfile == "" {
+		logger.Error("KEYFILE not set")
+		os.Exit(1)
+	}
+	keyID := os.Getenv("KEY_ID")
+	if keyID == "" {
+		logger.Error("KEY_ID not set")
+		os.Exit(1)
+	}
+
+	s3Backend, err := endpoints.NewS3Backend(bucketName, hostname, keyfile, keyID)
 	if err != nil {
 		panic(err)
 	}
