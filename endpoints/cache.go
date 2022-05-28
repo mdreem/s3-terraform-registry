@@ -23,7 +23,7 @@ func NewCache(client RegistryClient) Cache {
 	return &S3ProviderData{
 		providerData: client,
 		cachedResult: cachedResult{},
-		bucket:       s3.New(client.bucketName),
+		bucket:       client.bucket,
 	}
 }
 
