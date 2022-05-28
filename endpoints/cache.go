@@ -2,9 +2,9 @@ package endpoints
 
 import (
 	"fmt"
+	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
-	"log"
 	"regexp"
 )
 
@@ -54,7 +54,7 @@ func (cache *S3ProviderData) Refresh() error {
 
 	objects, err := cache.bucket.ListObjects()
 	if err != nil {
-		log.Printf("ERROR: an error occurred when listing objects in S3: %v\n", err)
+		logger.Error("an error occurred when listing objects in S3", "error", err)
 		return err
 	}
 
@@ -68,7 +68,7 @@ func (cache *S3ProviderData) Refresh() error {
 
 			listVersions, err := cache.providerData.ListVersions(matches["namespace"], matches["type"])
 			if err != nil {
-				log.Printf("ERROR: an error occurred when updating listing versions: %v\n", err)
+				logger.Error("an error occurred when updating listing versions", "error", err)
 				return err
 			}
 

@@ -2,7 +2,7 @@ package endpoints
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
+	"github.com/mdreem/s3_terraform_registry/logger"
 )
 
 func Proxy(p ProviderData) func(c *gin.Context) {
@@ -14,11 +14,11 @@ func Proxy(p ProviderData) func(c *gin.Context) {
 		arch := c.Param("arch")
 		filename := c.Param("filename")
 
-		log.Printf("proxy data with namespace=%s type=%s version=%s, os=%s arch=%s filename=%s", namespace, pType, version, os, arch, filename)
+		logger.Info("proxy data with", "namespace", namespace, "type", pType, "version", version, "os", os, "arch", arch, "filename", filename)
 
 		downloadData, err := p.Proxy(namespace, pType, version, os, arch, filename)
 		if err != nil {
-			log.Printf("INFO: error proxying data: %v\n", err)
+			logger.Error("error proxying data", "error", err)
 			c.String(500, "")
 			return
 		}

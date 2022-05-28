@@ -4,7 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"log"
+	"github.com/mdreem/s3_terraform_registry/logger"
 )
 
 type ListObjects interface {
@@ -19,7 +19,7 @@ func (bucket Bucket) ListObjects() ([]string, error) {
 	svc := s3.New(sess)
 	objectList, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(bucket.bucketName)})
 	if err != nil {
-		log.Printf("ERROR: an error occurred when listing versions: %v\n", err)
+		logger.Error("an error occurred when listing versions", "error", err)
 		return nil, err
 	}
 
