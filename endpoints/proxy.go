@@ -10,13 +10,11 @@ func Proxy(p ProviderData) func(c *gin.Context) {
 		namespace := c.Param("namespace")
 		pType := c.Param("type")
 		version := c.Param("version")
-		os := c.Param("os")
-		arch := c.Param("arch")
 		filename := c.Param("filename")
 
-		logger.Info("proxy data with", "namespace", namespace, "type", pType, "version", version, "os", os, "arch", arch, "filename", filename)
+		logger.Info("proxy data with", "namespace", namespace, "type", pType, "version", version, "filename", filename)
 
-		downloadData, err := p.Proxy(namespace, pType, version, os, arch, filename)
+		downloadData, err := p.Proxy(namespace, pType, version, filename)
 		if err != nil {
 			logger.Error("error proxying data", "error", err)
 			c.String(500, "")

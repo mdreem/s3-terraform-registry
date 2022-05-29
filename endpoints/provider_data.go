@@ -22,7 +22,7 @@ type ProxyResponse struct {
 type ProviderData interface {
 	ListVersions(namespace string, providerType string) (schema.ProviderVersions, error)
 	GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error)
-	Proxy(namespace string, providerType string, version string, os string, arch string, filename string) (ProxyResponse, error)
+	Proxy(namespace string, providerType string, version string, os string) (ProxyResponse, error)
 }
 
 type RegistryClient struct {
@@ -53,7 +53,7 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 		return schema.ProviderVersions{}, err
 	}
 
-	r := regexp.MustCompile(`^(?P<namespace>[^/]*)/(?P<type>[^/]*)/(?P<version>[^/]*)/(?P<os>[^/]*)/(?P<arch>[^/]*)/(?P<name>[^/]*).zip$`)
+	r := regexp.MustCompile(`^(?P<namespace>[^/]*)/(?P<type>[^/]*)/(?P<version>[^/]*)/(?P<name>[^_]*)_(?P<version_file>[^_]*)_(?P<os>[^_]*)_(?P<arch>[^_]*).zip$`)
 	names := r.SubexpNames()
 
 	versions := make(map[string][]schema.Platform)
@@ -109,7 +109,7 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 }
 
 func (client RegistryClient) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
-	basePath := fmt.Sprintf("%s/%s/%s/%s/%s", namespace, providerType, version, os, arch)
+	basePath := fmt.Sprintf("%s/%s/%s", namespace, providerType, version)
 	baseURL := fmt.Sprintf("https://%s/proxy/%s", client.hostname, basePath)
 	logger.Info("fetching signature file", "file", fmt.Sprintf("%s/shasum", basePath))
 
@@ -127,12 +127,13 @@ func (client RegistryClient) GetDownloadData(namespace string, providerType stri
 	shaSumFile := buf.String()
 	shaSum := strings.Split(shaSumFile, " ")[0]
 
+	filename := fmt.Sprintf("terraform-provider-%s_%s_%s_%s.zip", providerType, version, os, arch)
 	return schema.DownloadData{
 		Protocols:           []string{"4.0", "5.0"},
 		Os:                  os,
 		Arch:                arch,
-		Filename:            fmt.Sprintf("terraform-provider-%s.zip", providerType),
-		DownloadURL:         fmt.Sprintf("%s/terraform-provider-%s.zip", baseURL, providerType),
+		Filename:            filename,
+		DownloadURL:         fmt.Sprintf("%s/%s", baseURL, filename),
 		ShasumsURL:          fmt.Sprintf("%s/shasum", baseURL),
 		ShasumsSignatureURL: fmt.Sprintf("%s/shasum.sig", baseURL),
 		Shasum:              shaSum,
@@ -149,8 +150,8 @@ func (client RegistryClient) GetDownloadData(namespace string, providerType stri
 	}, nil
 }
 
-func (client RegistryClient) Proxy(namespace string, providerType string, version string, os string, arch string, filename string) (ProxyResponse, error) {
-	basePath := fmt.Sprintf("%s/%s/%s/%s/%s", namespace, providerType, version, os, arch)
+func (client RegistryClient) Proxy(namespace string, providerType string, version string, filename string) (ProxyResponse, error) {
+	basePath := fmt.Sprintf("%s/%s/%s", namespace, providerType, version)
 	logger.Info("proxying file file", "file", fmt.Sprintf("%s/%s", basePath, filename))
 
 	object, err := client.bucket.GetObject(fmt.Sprintf("%s/%s", basePath, filename))

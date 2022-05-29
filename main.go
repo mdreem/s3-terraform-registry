@@ -58,7 +58,7 @@ func main() {
 	r.GET("/v1/providers/:namespace/:type/versions", endpoints.ListVersions(&cache))
 	r.GET("/v1/providers/:namespace/:type/:version/download/:os/:arch", endpoints.GetDownloadData(s3Backend))
 
-	r.GET("/proxy/:namespace/:type/:version/:os/:arch/:filename", endpoints.Proxy(s3Backend))
+	r.GET("/proxy/:namespace/:type/:version/:filename", endpoints.Proxy(s3Backend))
 
 	port := os.Getenv("PORT")
 	if port == "" {
