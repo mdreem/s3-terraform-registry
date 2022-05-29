@@ -54,12 +54,12 @@ func (cache *S3ProviderData) Refresh() error {
 
 	objects, err := cache.bucket.ListObjects()
 	if err != nil {
-		logger.Error("an error occurred when listing objects in S3", "error", err)
+		logger.Sugar.Error("an error occurred when listing objects in S3", "error", err)
 		return err
 	}
 
 	for _, item := range objects {
-		logger.Debug("checking item", "item", item)
+		logger.Sugar.Debug("checking item", "item", item)
 		if r.MatchString(item) {
 			result := r.FindAllStringSubmatch(item, -1)
 			matches := map[string]string{}
@@ -69,7 +69,7 @@ func (cache *S3ProviderData) Refresh() error {
 
 			listVersions, err := cache.providerData.ListVersions(matches["namespace"], matches["type"])
 			if err != nil {
-				logger.Error("an error occurred when updating listing versions", "error", err)
+				logger.Sugar.Error("an error occurred when updating listing versions", "error", err)
 				return err
 			}
 

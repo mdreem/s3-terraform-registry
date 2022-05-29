@@ -19,7 +19,7 @@ func (bucket Bucket) ListObjects() ([]string, error) {
 	svc := s3.New(sess)
 	objectList, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(bucket.bucketName)})
 	if err != nil {
-		logger.Error("an error occurred when listing versions", "error", err)
+		logger.Sugar.Error("an error occurred when listing versions", "error", err)
 		return nil, err
 	}
 
