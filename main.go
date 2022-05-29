@@ -11,26 +11,26 @@ var GitCommit string
 var Version string
 
 func main() {
-	logger.Info("s3_terraform_registry. ", "Version", Version, "Commit", GitCommit)
+	logger.Sugar.Info("s3_terraform_registry. ", "Version", Version, "Commit", GitCommit)
 
 	bucketName := os.Getenv("BUCKET_NAME")
 	if bucketName == "" {
-		logger.Error("BUCKET_NAME not set")
+		logger.Sugar.Error("BUCKET_NAME not set")
 		os.Exit(1)
 	}
 	hostname := os.Getenv("HOSTNAME")
 	if hostname == "" {
-		logger.Error("HOSTNAME not set")
+		logger.Sugar.Error("HOSTNAME not set")
 		os.Exit(1)
 	}
 	keyfile := os.Getenv("KEYFILE")
 	if keyfile == "" {
-		logger.Error("KEYFILE not set")
+		logger.Sugar.Error("KEYFILE not set")
 		os.Exit(1)
 	}
 	keyID := os.Getenv("KEY_ID")
 	if keyID == "" {
-		logger.Error("KEY_ID not set")
+		logger.Sugar.Error("KEY_ID not set")
 		os.Exit(1)
 	}
 

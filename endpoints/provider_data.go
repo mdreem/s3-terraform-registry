@@ -49,7 +49,7 @@ func NewS3Backend(bucket s3.BucketReaderWriter, hostname string, keyFile string,
 func (client RegistryClient) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
 	objects, err := client.bucket.ListObjects()
 	if err != nil {
-		logger.Error("an error occurred when listing objects in S3", "error", err)
+		logger.Sugar.Error("an error occurred when listing objects in S3", "error", err)
 		return schema.ProviderVersions{}, err
 	}
 
@@ -76,7 +76,7 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 				continue
 			}
 
-			logger.Info("list versions: adding", "item", item)
+			logger.Sugar.Info("list versions: adding", "item", item)
 
 			platforms := versions[matches["version"]]
 			platforms = append(platforms, schema.Platform{
@@ -111,9 +111,9 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 func (client RegistryClient) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
 	basePath := fmt.Sprintf("%s/%s/%s", namespace, providerType, version)
 	baseURL := fmt.Sprintf("https://%s/proxy/%s", client.hostname, basePath)
-	logger.Info("fetching signature file", "file", fmt.Sprintf("%s/shasum", basePath))
+	logger.Sugar.Info("fetching signature file", "file", fmt.Sprintf("%s/shasum", basePath))
 
-	logger.Debug("getting download data with", "basePath", basePath, "baseURL", baseURL)
+	logger.Sugar.Debug("getting download data with", "basePath", basePath, "baseURL", baseURL)
 	object, err := client.bucket.GetObject(fmt.Sprintf("%s/shasum", basePath))
 	if err != nil {
 		return schema.DownloadData{}, err
@@ -153,7 +153,7 @@ func (client RegistryClient) GetDownloadData(namespace string, providerType stri
 
 func (client RegistryClient) Proxy(namespace string, providerType string, version string, filename string) (ProxyResponse, error) {
 	basePath := fmt.Sprintf("%s/%s/%s", namespace, providerType, version)
-	logger.Info("proxying file file", "file", fmt.Sprintf("%s/%s", basePath, filename))
+	logger.Sugar.Info("proxying file file", "file", fmt.Sprintf("%s/%s", basePath, filename))
 
 	object, err := client.bucket.GetObject(fmt.Sprintf("%s/%s", basePath, filename))
 	if err != nil {

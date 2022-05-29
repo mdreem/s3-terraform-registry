@@ -63,7 +63,7 @@ type TestProviderData struct {
 }
 
 func (t TestProviderData) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
-	logger.Info("listing versions", "namespace", namespace, "type", providerType)
+	logger.Sugar.Info("listing versions", "namespace", namespace, "type", providerType)
 	return schema.ProviderVersions{
 		ID: namespace,
 		Versions: []schema.ProviderVersion{
