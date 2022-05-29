@@ -1,27 +1,29 @@
 package logger
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+)
 
 var Logger *zap.Logger
-var sugar *zap.SugaredLogger
+var Sugar *zap.SugaredLogger
 
 func init() {
 	Logger, _ = zap.NewProduction()
-	sugar = Logger.Sugar()
+	Sugar = Logger.Sugar()
 }
 
 func Info(message string, fields ...interface{}) {
-	sugar.Infow(message, fields...)
+	Sugar.Infow(message, fields...)
 }
 
 func Debug(message string, fields ...interface{}) {
-	sugar.Debugw(message, fields...)
+	Sugar.Debugw(message, fields...)
 }
 
 func Error(message string, fields ...interface{}) {
-	sugar.Errorw(message, fields...)
+	Sugar.Errorw(message, fields...)
 }
 
 func Fatal(message string, fields ...interface{}) {
-	sugar.Fatalw(message, fields...)
+	Sugar.Fatalw(message, fields...)
 }

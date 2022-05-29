@@ -1,12 +1,10 @@
 package main
 
 import (
-	"github.com/gin-contrib/zap"
-	"github.com/gin-gonic/gin"
 	"github.com/mdreem/s3_terraform_registry/endpoints"
 	"github.com/mdreem/s3_terraform_registry/logger"
+	"github.com/mdreem/s3_terraform_registry/s3"
 	"os"
-	"time"
 )
 
 var GitCommit string
@@ -14,12 +12,6 @@ var Version string
 
 func main() {
 	logger.Info("s3_terraform_registry. ", "Version", Version, "Commit", GitCommit)
-
-	gin.SetMode(gin.ReleaseMode)
-	r := gin.New()
-
-	r.Use(ginzap.Ginzap(logger.Logger, time.RFC3339, true))
-	r.Use(ginzap.RecoveryWithZap(logger.Logger, true))
 
 	bucketName := os.Getenv("BUCKET_NAME")
 	if bucketName == "" {
@@ -42,23 +34,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	s3Backend, err := endpoints.NewS3Backend(bucketName, hostname, keyfile, keyID)
+	bucket := s3.New(bucketName)
+	s3Backend, err := endpoints.NewS3Backend(bucket, hostname, keyfile, keyID)
 	if err != nil {
 		panic(err)
 	}
 
-	cache := endpoints.NewCache(s3Backend)
+	cache := endpoints.NewCache(s3Backend, bucket)
 	err = cache.Refresh()
 	if err != nil {
 		panic(err)
 	}
 
-	r.GET("/.well-known/terraform.json", endpoints.Discovery())
-
-	r.GET("/v1/providers/:namespace/:type/versions", endpoints.ListVersions(&cache))
-	r.GET("/v1/providers/:namespace/:type/:version/download/:os/:arch", endpoints.GetDownloadData(s3Backend))
-
-	r.GET("/proxy/:namespace/:type/:version/:os/:arch/:filename", endpoints.Proxy(s3Backend))
+	r := endpoints.SetupRouter(cache, s3Backend)
 
 	port := os.Getenv("PORT")
 	if port == "" {

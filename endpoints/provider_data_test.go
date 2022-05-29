@@ -37,10 +37,10 @@ func TestRegistryClient_GetDownloadData(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "",
+			name: "get download data",
 			fields: fields{
 				bucket: NewTestBucketWithObjects([]string{}, map[string]s3.BucketObject{
-					"black/lodge/1.0.1/linux/amd64/shasum": {
+					"black/lodge/1.0.1/shasum": {
 						Body:          createReaderFor("315 coffee"),
 						ContentLength: 0,
 						ContentType:   "",
@@ -61,10 +61,10 @@ func TestRegistryClient_GetDownloadData(t *testing.T) {
 				Protocols:           []string{"4.0", "5.0"},
 				Os:                  "linux",
 				Arch:                "amd64",
-				Filename:            "terraform-provider-lodge.zip",
-				DownloadURL:         "https://twin.peaks/proxy/black/lodge/1.0.1/linux/amd64/terraform-provider-lodge.zip",
-				ShasumsURL:          "https://twin.peaks/proxy/black/lodge/1.0.1/linux/amd64/shasum",
-				ShasumsSignatureURL: "https://twin.peaks/proxy/black/lodge/1.0.1/linux/amd64/shasum.sig",
+				Filename:            "terraform-provider-lodge_1.0.1_linux_amd64.zip",
+				DownloadURL:         "https://twin.peaks/proxy/black/lodge/1.0.1/terraform-provider-lodge_1.0.1_linux_amd64.zip",
+				ShasumsURL:          "https://twin.peaks/proxy/black/lodge/1.0.1/shasum",
+				ShasumsSignatureURL: "https://twin.peaks/proxy/black/lodge/1.0.1/shasum.sig",
 				Shasum:              "315",
 				SigningKeys: struct {
 					GpgPublicKeys []schema.GpgPublicKey `json:"gpg_public_keys"`
@@ -125,8 +125,9 @@ func TestRegistryClient_ListVersions(t *testing.T) {
 			name: "list versions based on S3 content",
 			fields: fields{
 				bucket: NewTestBucket([]string{
-					"black/lodge/1.0.0/linux/amd64/provider.zip",
-					"black/lodge/1.0.1/linux/amd64/provider.zip",
+					"black/lodge/1.0.0/provider_1.0.0_linux_amd64.zip",
+					"black/lodge/1.0.1/provider_1.0.1_linux_amd64.zip",
+					"black/lodge/1.0.1/provider_1.0.1_windows_amd64.zip",
 				}),
 				hostname:     "twin.peaks",
 				gpgPublicKey: "Great Northern Hotel Room Key",
@@ -150,10 +151,15 @@ func TestRegistryClient_ListVersions(t *testing.T) {
 					{
 						Version:   "1.0.1",
 						Protocols: []string{"4.0", "5.0"},
-						Platforms: []schema.Platform{{
-							Os:   "linux",
-							Arch: "amd64",
-						}},
+						Platforms: []schema.Platform{
+							{
+								Os:   "linux",
+								Arch: "amd64",
+							},
+							{
+								Os:   "windows",
+								Arch: "amd64",
+							}},
 					},
 				},
 				Warnings: nil,
@@ -204,10 +210,10 @@ func TestRegistryClient_Proxy(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "",
+			name: "proxy returns file",
 			fields: fields{
 				bucket: NewTestBucketWithObjects([]string{}, map[string]s3.BucketObject{
-					"black/lodge/1.0.1/linux/amd64/terraform-provider-lodge.zip": {
+					"black/lodge/1.0.1/provider_1.0.1_linux_amd64.zip": {
 						Body:          createReaderFor("315 coffee"),
 						ContentLength: 253,
 						ContentType:   "Lodge Response",
@@ -223,7 +229,7 @@ func TestRegistryClient_Proxy(t *testing.T) {
 				version:      "1.0.1",
 				os:           "linux",
 				arch:         "amd64",
-				filename:     "terraform-provider-lodge.zip",
+				filename:     "provider_1.0.1_linux_amd64.zip",
 			},
 			want: ProxyResponse{
 				Body:          createReaderFor("315 coffee"),
@@ -241,7 +247,7 @@ func TestRegistryClient_Proxy(t *testing.T) {
 				gpgPublicKey: tt.fields.gpgPublicKey,
 				keyID:        tt.fields.keyID,
 			}
-			got, err := client.Proxy(tt.args.namespace, tt.args.providerType, tt.args.version, tt.args.os, tt.args.arch, tt.args.filename)
+			got, err := client.Proxy(tt.args.namespace, tt.args.providerType, tt.args.version, tt.args.filename)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Proxy() error = %v, wantErr %v", err, tt.wantErr)
 				return

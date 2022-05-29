@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"fmt"
+	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
 	"io"
@@ -15,13 +16,9 @@ func defaultBucketContent() []string {
 		"some_namespace/",
 		"some_namespace/some_type/",
 		"some_namespace/some_type/1.0.0/",
-		"some_namespace/some_type/1.0.0/linux/",
-		"some_namespace/some_type/1.0.0/linux/amd64/",
-		"some_namespace/some_type/1.0.0/linux/amd64/terraform-provider-test.zip",
+		"some_namespace/some_type/1.0.0/linux/amd64/terraform-provider-test_1.0.0_linux_amd64.zip",
 		"some_namespace/some_type/1.0.1/",
-		"some_namespace/some_type/1.0.1/linux/",
-		"some_namespace/some_type/1.0.1/linux/amd64/",
-		"some_namespace/some_type/1.0.1/linux/amd64/terraform-provider-test.zip",
+		"some_namespace/some_type/1.0.1/linux/amd64/terraform-provider-test_1.0.1_linux_amd64.zip",
 	}
 }
 
@@ -66,6 +63,7 @@ type TestProviderData struct {
 }
 
 func (t TestProviderData) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
+	logger.Info("listing versions", "namespace", namespace, "type", providerType)
 	return schema.ProviderVersions{
 		ID: namespace,
 		Versions: []schema.ProviderVersion{
@@ -86,7 +84,7 @@ func (t TestProviderData) GetDownloadData(namespace string, providerType string,
 	return schema.DownloadData{}, nil
 }
 
-func (t TestProviderData) Proxy(namespace string, providerType string, version string, os string, arch string, filename string) (ProxyResponse, error) {
+func (t TestProviderData) Proxy(namespace string, providerType string, version string, filename string) (ProxyResponse, error) {
 	return ProxyResponse{}, nil
 }
 
