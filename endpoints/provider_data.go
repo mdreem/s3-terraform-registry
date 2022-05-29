@@ -32,14 +32,14 @@ type RegistryClient struct {
 	keyID        string
 }
 
-func NewS3Backend(bucketName string, hostname string, keyFile string, keyID string) (RegistryClient, error) {
+func NewS3Backend(bucket s3.BucketReaderWriter, hostname string, keyFile string, keyID string) (RegistryClient, error) {
 	file, err := ioutil.ReadFile(keyFile)
 	if err != nil {
 		return RegistryClient{}, err
 	}
 
 	return RegistryClient{
-		bucket:       s3.New(bucketName),
+		bucket:       bucket,
 		hostname:     hostname,
 		gpgPublicKey: string(file),
 		keyID:        keyID,
@@ -113,6 +113,7 @@ func (client RegistryClient) GetDownloadData(namespace string, providerType stri
 	baseURL := fmt.Sprintf("https://%s/proxy/%s", client.hostname, basePath)
 	logger.Info("fetching signature file", "file", fmt.Sprintf("%s/shasum", basePath))
 
+	logger.Debug("getting download data with", "basePath", basePath, "baseURL", baseURL)
 	object, err := client.bucket.GetObject(fmt.Sprintf("%s/shasum", basePath))
 	if err != nil {
 		return schema.DownloadData{}, err

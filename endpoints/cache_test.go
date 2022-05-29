@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"fmt"
+	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
 	"io"
@@ -62,6 +63,7 @@ type TestProviderData struct {
 }
 
 func (t TestProviderData) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
+	logger.Info("listing versions", "namespace", namespace, "type", providerType)
 	return schema.ProviderVersions{
 		ID: namespace,
 		Versions: []schema.ProviderVersion{

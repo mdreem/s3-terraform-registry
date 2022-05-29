@@ -19,11 +19,11 @@ type S3ProviderData struct {
 	bucket       s3.ListObjects
 }
 
-func NewCache(client RegistryClient) Cache {
+func NewCache(client ProviderData, bucketReader s3.ListObjects) Cache {
 	return &S3ProviderData{
 		providerData: client,
 		cachedResult: cachedResult{},
-		bucket:       client.bucket,
+		bucket:       bucketReader,
 	}
 }
 
@@ -59,6 +59,7 @@ func (cache *S3ProviderData) Refresh() error {
 	}
 
 	for _, item := range objects {
+		logger.Debug("checking item", "item", item)
 		if r.MatchString(item) {
 			result := r.FindAllStringSubmatch(item, -1)
 			matches := map[string]string{}
