@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
@@ -84,4 +85,19 @@ func (cache *S3ProviderData) Refresh() error {
 
 	cache.cachedResult = versionData
 	return nil
+}
+
+func RefreshHandler(cache *Cache) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		logger.Sugar.Infow("refreshing cache")
+
+		err := (*cache).Refresh()
+		if err != nil {
+			logger.Sugar.Errorw("error refreshing data", "error", err)
+			c.String(500, "")
+			return
+		}
+
+		c.String(200, "refreshed")
+	}
 }
