@@ -10,11 +10,11 @@ func ListVersions(cache *Cache) func(c *gin.Context) {
 		namespace := c.Param("namespace")
 		providertype := c.Param("type")
 
-		logger.Sugar.Info("called list versions ", "namespace", namespace, "providertype", providertype)
+		logger.Sugar.Infow("called list versions ", "namespace", namespace, "providertype", providertype)
 
 		versions, err := (*cache).ListVersions(namespace, providertype)
 		if err != nil {
-			logger.Sugar.Error("list versions returned error", "error", err)
+			logger.Sugar.Errorw("list versions returned error", "error", err)
 			c.String(500, "")
 			return
 		}

@@ -13,11 +13,11 @@ func GetDownloadData(p ProviderData) func(c *gin.Context) {
 		os := c.Param("os")
 		arch := c.Param("arch")
 
-		logger.Sugar.Info("called get download data", "namespace", namespace, "type", pType, "version", version, "os", os, "arch", arch)
+		logger.Sugar.Infow("called get download data", "namespace", namespace, "type", pType, "version", version, "os", os, "arch", arch)
 
 		downloadData, err := p.GetDownloadData(namespace, pType, version, os, arch)
 		if err != nil {
-			logger.Sugar.Error("get download data returned error", "error", err)
+			logger.Sugar.Errorw("get download data returned error", "error", err)
 			c.String(500, "")
 			return
 		}
