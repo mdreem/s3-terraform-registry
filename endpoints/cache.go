@@ -45,7 +45,7 @@ type cachedResult struct {
 }
 
 func (cache *S3ProviderData) Refresh() error {
-	r := regexp.MustCompile(`^(?P<namespace>[^/]*)/(?P<type>[^/]*)/$`)
+	r := regexp.MustCompile(`^(?P<namespace>[^/]*)/(?P<type>[^/]*)/`)
 	names := r.SubexpNames()
 
 	versionData := cachedResult{
