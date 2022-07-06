@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
@@ -45,7 +46,7 @@ type cachedResult struct {
 }
 
 func (cache *S3ProviderData) Refresh() error {
-	r := regexp.MustCompile(`^(?P<namespace>[^/]*)/(?P<type>[^/]*)/$`)
+	r := regexp.MustCompile(`^(?P<namespace>[^/]*)/(?P<type>[^/]*)/`)
 	names := r.SubexpNames()
 
 	versionData := cachedResult{
@@ -54,12 +55,12 @@ func (cache *S3ProviderData) Refresh() error {
 
 	objects, err := cache.bucket.ListObjects()
 	if err != nil {
-		logger.Sugar.Error("an error occurred when listing objects in S3", "error", err)
+		logger.Sugar.Errorw("an error occurred when listing objects in S3", "error", err)
 		return err
 	}
 
 	for _, item := range objects {
-		logger.Sugar.Debug("checking item", "item", item)
+		logger.Sugar.Debugw("checking item", "item", item)
 		if r.MatchString(item) {
 			result := r.FindAllStringSubmatch(item, -1)
 			matches := map[string]string{}
@@ -69,7 +70,7 @@ func (cache *S3ProviderData) Refresh() error {
 
 			listVersions, err := cache.providerData.ListVersions(matches["namespace"], matches["type"])
 			if err != nil {
-				logger.Sugar.Error("an error occurred when updating listing versions", "error", err)
+				logger.Sugar.Errorw("an error occurred when updating listing versions", "error", err)
 				return err
 			}
 
@@ -84,4 +85,19 @@ func (cache *S3ProviderData) Refresh() error {
 
 	cache.cachedResult = versionData
 	return nil
+}
+
+func RefreshHandler(cache *Cache) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		logger.Sugar.Infow("refreshing cache")
+
+		err := (*cache).Refresh()
+		if err != nil {
+			logger.Sugar.Errorw("error refreshing data", "error", err)
+			c.String(500, "")
+			return
+		}
+
+		c.String(200, "refreshed")
+	}
 }

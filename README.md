@@ -23,7 +23,7 @@ The registry is configured via environment variables:
 - HOSTNAME: The hostname under which this registry will be available.
 - KEYFILE: The location of the keyfile that is used to check the signature.
 - KEY_ID: The ID of the key used to check the signature.
-
+- LOGLEVEL: (optional) can be set to `error`, `info`, `debug` to set loglevel.
 # File structure in S3
 
 For every combination of version, platform and architecture create a zip. Upload it into the respective

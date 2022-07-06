@@ -20,5 +20,6 @@ func SetupRouter(cache Cache, providerData ProviderData) *gin.Engine {
 	r.GET("/v1/providers/:namespace/:type/:version/download/:os/:arch", GetDownloadData(providerData))
 
 	r.GET("/proxy/:namespace/:type/:version/:filename", Proxy(providerData))
+	r.GET("/refresh", RefreshHandler(&cache))
 	return r
 }

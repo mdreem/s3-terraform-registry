@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"errors"
 	"fmt"
 	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
@@ -13,12 +14,17 @@ import (
 
 func defaultBucketContent() []string {
 	return []string{
-		"some_namespace/",
-		"some_namespace/some_type/",
 		"some_namespace/some_type/1.0.0/",
 		"some_namespace/some_type/1.0.0/linux/amd64/terraform-provider-test_1.0.0_linux_amd64.zip",
 		"some_namespace/some_type/1.0.1/",
 		"some_namespace/some_type/1.0.1/linux/amd64/terraform-provider-test_1.0.1_linux_amd64.zip",
+	}
+}
+
+func errorBucketContent() []string {
+	return []string{
+		"ERROR_PROVIDER/some_type/1.0.0/",
+		"ERROR_PROVIDER/some_type/1.0.0/linux/amd64/terraform-provider-test_1.0.0_linux_amd64.zip",
 	}
 }
 
@@ -63,7 +69,11 @@ type TestProviderData struct {
 }
 
 func (t TestProviderData) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
-	logger.Sugar.Info("listing versions", "namespace", namespace, "type", providerType)
+	logger.Sugar.Infow("listing versions", "namespace", namespace, "type", providerType)
+	if namespace == "ERROR_PROVIDER" {
+		return schema.ProviderVersions{}, errors.New("some error occurred")
+	}
+
 	return schema.ProviderVersions{
 		ID: namespace,
 		Versions: []schema.ProviderVersion{
@@ -246,6 +256,20 @@ func TestS3ProviderData_Refresh(t *testing.T) {
 						},
 					},
 				},
+			},
+		},
+		{
+			name: "test refreshing data in bucket",
+			fields: fields{
+				providerData: NewTestProviderData(),
+				cachedResult: cachedResult{
+					versions: defaultVersions(),
+				},
+				bucket: NewTestBucket(errorBucketContent()),
+			},
+			wantErr: true,
+			wantCachedResult: cachedResult{
+				versions: defaultVersions(),
 			},
 		},
 	}
