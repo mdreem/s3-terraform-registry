@@ -17,13 +17,14 @@ This signature can be checked with the public key that has to be given.
 
 ## Configuration
 
-The registry is configured via environment variables:
+The registry is configured via the following flags:
 
-- BUCKET_NAME: This is the S3 bucket where the files are placed.
-- HOSTNAME: The hostname under which this registry will be available.
-- KEYFILE: The location of the keyfile that is used to check the signature.
-- KEY_ID: The ID of the key used to check the signature.
-- LOGLEVEL: (optional) can be set to `error`, `info`, `debug` to set loglevel.
+- `bucket-name`: This is the S3 bucket where the files are placed.
+- `hostname`: The hostname under which this registry will be available.
+- `port`: (optional) port the registry will listen on.
+- `keyfile`: The location of the keyfile that is used to check the signature.
+- `key-id`: The ID of the key used to check the signature.
+- `loglevel`: (optional) can be set to `error`, `info`, `debug` to set loglevel.
 # File structure in S3
 
 For every combination of version, platform and architecture create a zip. Upload it into the respective
