@@ -39,7 +39,7 @@ func runCommand(command *cobra.Command, _ []string) {
 		panic(err)
 	}
 
-	r := endpoints.SetupRouter(cache, s3Backend)
+	r := endpoints.SetupRouter(cache)
 
 	port := common.GetString(command, "port")
 	_ = r.Run(":" + port)

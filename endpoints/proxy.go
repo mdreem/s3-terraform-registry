@@ -5,16 +5,16 @@ import (
 	"github.com/mdreem/s3_terraform_registry/logger"
 )
 
-func Proxy(p ProviderData) func(c *gin.Context) {
+func Proxy(providerData *ProviderData) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		namespace := c.Param("namespace")
-		pType := c.Param("type")
+		providerType := c.Param("type")
 		version := c.Param("version")
 		filename := c.Param("filename")
 
-		logger.Sugar.Infow("proxy data with", "namespace", namespace, "type", pType, "version", version, "filename", filename)
+		logger.Sugar.Infow("proxy data with", "namespace", namespace, "type", providerType, "version", version, "filename", filename)
 
-		downloadData, err := p.Proxy(namespace, pType, version, filename)
+		downloadData, err := (*providerData).Proxy(namespace, providerType, version, filename)
 		if err != nil {
 			logger.Sugar.Errorw("error proxying data", "error", err)
 			c.String(500, "")
