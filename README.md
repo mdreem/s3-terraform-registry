@@ -13,6 +13,8 @@ This signature can be checked with the public key that has to be given.
 <namespace>/<type>/<version>/<os>/<arch>/<name>.zip
 <namespace>/<type>/<version>/<os>/<arch>/shasum
 <namespace>/<type>/<version>/<os>/<arch>/shasum.sig
+<namespace>/<type>/<version>/<os>/<arch>/key_id
+<namespace>/<type>/<version>/<os>/<arch>/keyfile
 ```
 
 ## Configuration

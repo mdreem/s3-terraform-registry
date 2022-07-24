@@ -26,11 +26,9 @@ func runCommand(command *cobra.Command, _ []string) {
 
 	bucketName := common.GetString(command, "bucket-name")
 	hostname := common.GetString(command, "hostname")
-	keyfile := common.GetString(command, "keyfile")
-	keyID := common.GetString(command, "key-id")
 
 	bucket := s3.New(bucketName)
-	s3Backend, err := endpoints.NewS3Backend(bucket, hostname, keyfile, keyID)
+	s3Backend, err := endpoints.NewS3Backend(bucket, hostname)
 	if err != nil {
 		logger.Sugar.Panicw("failed to initialize S3 backend.", "error", err)
 	}
@@ -61,15 +59,10 @@ func init() {
 	flags.StringP("hostname", "H", "", "hostname under which this registry will be available.")
 	flags.StringP("port", "p", "8080", "port the registry will listen on.")
 
-	flags.StringP("keyfile", "k", "", "location of the keyfile that is used to check the signature.")
-	flags.StringP("key-id", "i", "", "ID of the gpg key used to check the signature.")
-
 	flags.StringP("loglevel", "l", "info", "can be set to `error`, `info`, `debug` to set loglevel.")
 
 	markPersistentFlagRequired("bucket-name")
 	markPersistentFlagRequired("hostname")
-	markPersistentFlagRequired("keyfile")
-	markPersistentFlagRequired("key-id")
 }
 
 func markPersistentFlagRequired(flagName string) {
