@@ -27,7 +27,7 @@ func TestGetVersions(t *testing.T) {
 		t.Fatalf("error refreshing cache: %v", err)
 	}
 
-	r := SetupRouter(cache, providerData)
+	r := SetupRouter(cache)
 
 	req, _ := http.NewRequest("GET", "/v1/providers/black/lodge/versions", nil)
 
@@ -94,7 +94,7 @@ func TestGetDownloadData(t *testing.T) {
 		t.Fatalf("error refreshing cache: %v", err)
 	}
 
-	r := SetupRouter(cache, providerData)
+	r := SetupRouter(cache)
 
 	req, _ := http.NewRequest("GET", "/v1/providers/black/lodge/1.0.1/download/linux/amd64", nil)
 
@@ -158,7 +158,7 @@ func TestProxy(t *testing.T) {
 		t.Fatalf("error refreshing cache: %v", err)
 	}
 
-	r := SetupRouter(cache, providerData)
+	r := SetupRouter(cache)
 
 	req, _ := http.NewRequest("GET", "/proxy/black/lodge/1.0.1/terraform-provider-lodge_1.0.1_linux_amd64.zip", nil)
 
@@ -198,7 +198,7 @@ func TestRefresh(t *testing.T) {
 		t.Errorf("expected error here as cache is empty")
 	}
 
-	r := SetupRouter(cache, providerData)
+	r := SetupRouter(cache)
 	req, _ := http.NewRequest("GET", "/refresh", nil)
 
 	w := httptest.NewRecorder()

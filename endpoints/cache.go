@@ -10,7 +10,6 @@ import (
 )
 
 type Cache interface {
-	ListVersions(string, string) (schema.ProviderVersions, error)
 	Refresh() error
 }
 
@@ -20,7 +19,7 @@ type S3ProviderData struct {
 	bucket       s3.ListObjects
 }
 
-func NewCache(client ProviderData, bucketReader s3.ListObjects) Cache {
+func NewCache(client ProviderData, bucketReader s3.ListObjects) CacheableProviderData {
 	return &S3ProviderData{
 		providerData: client,
 		cachedResult: cachedResult{},
@@ -43,6 +42,14 @@ func (cache S3ProviderData) ListVersions(namespace string, providerType string) 
 
 type cachedResult struct {
 	versions map[string]map[string]schema.ProviderVersions
+}
+
+func (cache S3ProviderData) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
+	return cache.providerData.GetDownloadData(namespace, providerType, version, os, arch)
+}
+
+func (cache S3ProviderData) Proxy(namespace string, providerType string, version string, os string) (ProxyResponse, error) {
+	return cache.providerData.Proxy(namespace, providerType, version, os)
 }
 
 func (cache *S3ProviderData) Refresh() error {
