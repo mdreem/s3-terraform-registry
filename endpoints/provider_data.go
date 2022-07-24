@@ -7,7 +7,6 @@ import (
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
 	"io"
-	"io/ioutil"
 	"regexp"
 	"sort"
 	"strings"
@@ -26,23 +25,14 @@ type ProviderData interface {
 }
 
 type RegistryClient struct {
-	bucket       s3.BucketReaderWriter
-	hostname     string
-	gpgPublicKey string
-	keyID        string
+	bucket   s3.BucketReaderWriter
+	hostname string
 }
 
-func NewS3Backend(bucket s3.BucketReaderWriter, hostname string, keyFile string, keyID string) (RegistryClient, error) {
-	file, err := ioutil.ReadFile(keyFile)
-	if err != nil {
-		return RegistryClient{}, err
-	}
-
+func NewS3Backend(bucket s3.BucketReaderWriter, hostname string) (RegistryClient, error) {
 	return RegistryClient{
-		bucket:       bucket,
-		hostname:     hostname,
-		gpgPublicKey: string(file),
-		keyID:        keyID,
+		bucket:   bucket,
+		hostname: hostname,
 	}, nil
 }
 
@@ -111,22 +101,25 @@ func (client RegistryClient) ListVersions(namespace string, providerType string)
 func (client RegistryClient) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
 	basePath := fmt.Sprintf("%s/%s/%s", namespace, providerType, version)
 	baseURL := fmt.Sprintf("https://%s/proxy/%s", client.hostname, basePath)
-	logger.Sugar.Infow("fetching signature file", "file", fmt.Sprintf("%s/shasum", basePath))
 
 	logger.Sugar.Debugw("getting download data with", "basePath", basePath, "baseURL", baseURL)
-	object, err := client.bucket.GetObject(fmt.Sprintf("%s/shasum", basePath))
+
+	shaSum, err := client.fetchShaSum(basePath)
 	if err != nil {
 		return schema.DownloadData{}, err
 	}
 
-	buf := new(bytes.Buffer)
-	_, err = buf.ReadFrom(object.Body)
+	keyIDFileLocation := fmt.Sprintf("%s/key_id", basePath)
+	keyID, err := client.fetchObjectAsString(keyIDFileLocation)
 	if err != nil {
 		return schema.DownloadData{}, err
 	}
 
-	shaSumFile := buf.String()
-	shaSum := strings.Split(shaSumFile, " ")[0]
+	keyfileLocation := fmt.Sprintf("%s/keyfile", basePath)
+	gpgPublicKey, err := client.fetchObjectAsString(keyfileLocation)
+	if err != nil {
+		return schema.DownloadData{}, err
+	}
 
 	filename := fmt.Sprintf("terraform-provider-%s_%s_%s_%s.zip", providerType, version, os, arch)
 	return schema.DownloadData{
@@ -143,12 +136,38 @@ func (client RegistryClient) GetDownloadData(namespace string, providerType stri
 		}{
 			[]schema.GpgPublicKey{
 				{
-					KeyID:      client.keyID,
-					ASCIIArmor: client.gpgPublicKey,
+					KeyID:      keyID,
+					ASCIIArmor: gpgPublicKey,
 				},
 			},
 		},
 	}, nil
+}
+
+func (client RegistryClient) fetchShaSum(basePath string) (string, error) {
+	shaSumLocation := fmt.Sprintf("%s/shasum", basePath)
+	logger.Sugar.Debugw("fetching signature file", "file", shaSumLocation)
+
+	shaSumFile, err := client.fetchObjectAsString(shaSumLocation)
+	if err != nil {
+		return "", err
+	}
+	shaSum := strings.Split(shaSumFile, " ")[0]
+	return shaSum, nil
+}
+
+func (client RegistryClient) fetchObjectAsString(objectLocation string) (string, error) {
+	object, err := client.bucket.GetObject(objectLocation)
+	if err != nil {
+		return "", err
+	}
+
+	buf := new(bytes.Buffer)
+	_, err = buf.ReadFrom(object.Body)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 func (client RegistryClient) Proxy(namespace string, providerType string, version string, filename string) (ProxyResponse, error) {

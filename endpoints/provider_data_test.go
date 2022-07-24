@@ -45,6 +45,16 @@ func TestRegistryClient_GetDownloadData(t *testing.T) {
 						ContentLength: 0,
 						ContentType:   "",
 					},
+					"black/lodge/1.0.1/key_id": {
+						Body:          createReaderFor("315"),
+						ContentLength: 0,
+						ContentType:   "",
+					},
+					"black/lodge/1.0.1/keyfile": {
+						Body:          createReaderFor("Great Northern Hotel Room Key"),
+						ContentLength: 0,
+						ContentType:   "",
+					},
 				}),
 				hostname:     "twin.peaks",
 				gpgPublicKey: "Great Northern Hotel Room Key",
@@ -86,10 +96,8 @@ func TestRegistryClient_GetDownloadData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			client := RegistryClient{
-				bucket:       tt.fields.bucket,
-				hostname:     tt.fields.hostname,
-				gpgPublicKey: tt.fields.gpgPublicKey,
-				keyID:        tt.fields.keyID,
+				bucket:   tt.fields.bucket,
+				hostname: tt.fields.hostname,
 			}
 			got, err := client.GetDownloadData(tt.args.namespace, tt.args.providerType, tt.args.version, tt.args.os, tt.args.arch)
 			if (err != nil) != tt.wantErr {
@@ -105,10 +113,8 @@ func TestRegistryClient_GetDownloadData(t *testing.T) {
 
 func TestRegistryClient_ListVersions(t *testing.T) {
 	type fields struct {
-		bucket       s3.BucketReaderWriter
-		hostname     string
-		gpgPublicKey string
-		keyID        string
+		bucket   s3.BucketReaderWriter
+		hostname string
 	}
 	type args struct {
 		namespace    string
@@ -129,9 +135,7 @@ func TestRegistryClient_ListVersions(t *testing.T) {
 					"black/lodge/1.0.1/provider_1.0.1_linux_amd64.zip",
 					"black/lodge/1.0.1/provider_1.0.1_windows_amd64.zip",
 				}),
-				hostname:     "twin.peaks",
-				gpgPublicKey: "Great Northern Hotel Room Key",
-				keyID:        "315",
+				hostname: "twin.peaks",
 			},
 			args: args{
 				namespace:    "black",
@@ -170,10 +174,8 @@ func TestRegistryClient_ListVersions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			client := RegistryClient{
-				bucket:       tt.fields.bucket,
-				hostname:     tt.fields.hostname,
-				gpgPublicKey: tt.fields.gpgPublicKey,
-				keyID:        tt.fields.keyID,
+				bucket:   tt.fields.bucket,
+				hostname: tt.fields.hostname,
 			}
 			got, err := client.ListVersions(tt.args.namespace, tt.args.providerType)
 			if (err != nil) != tt.wantErr {
@@ -242,10 +244,8 @@ func TestRegistryClient_Proxy(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			client := RegistryClient{
-				bucket:       tt.fields.bucket,
-				hostname:     tt.fields.hostname,
-				gpgPublicKey: tt.fields.gpgPublicKey,
-				keyID:        tt.fields.keyID,
+				bucket:   tt.fields.bucket,
+				hostname: tt.fields.hostname,
 			}
 			got, err := client.Proxy(tt.args.namespace, tt.args.providerType, tt.args.version, tt.args.filename)
 			if (err != nil) != tt.wantErr {

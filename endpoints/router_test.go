@@ -8,8 +8,6 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -65,15 +63,6 @@ func TestGetDownloadData(t *testing.T) {
 	logger.Logger, _ = zap.NewDevelopment()
 	logger.Sugar = logger.Logger.Sugar()
 
-	tempDir := t.TempDir()
-	keyfile := filepath.Join(tempDir, "keyfile")
-
-	data := []byte("Great Northern Hotel Room Key")
-	err := os.WriteFile(keyfile, data, 0644)
-	if err != nil {
-		t.Fatalf("error writing file: %v", err)
-	}
-
 	testBucketWithObjects := NewTestBucketWithObjects([]string{
 		"black/lodge/",
 		"black/lodge/1.0.0/",
@@ -84,8 +73,18 @@ func TestGetDownloadData(t *testing.T) {
 			ContentLength: 0,
 			ContentType:   "",
 		},
+		"black/lodge/1.0.1/key_id": {
+			Body:          createReaderFor("315"),
+			ContentLength: 0,
+			ContentType:   "",
+		},
+		"black/lodge/1.0.1/keyfile": {
+			Body:          createReaderFor("Great Northern Hotel Room Key"),
+			ContentLength: 0,
+			ContentType:   "",
+		},
 	})
-	providerData, err := NewS3Backend(testBucketWithObjects, "twin.peaks", keyfile, "315")
+	providerData, err := NewS3Backend(testBucketWithObjects, "twin.peaks")
 	if err != nil {
 		t.Fatalf("error creating providerData: %v", err)
 	}
@@ -138,15 +137,6 @@ func TestProxy(t *testing.T) {
 	logger.Logger, _ = zap.NewDevelopment()
 	logger.Sugar = logger.Logger.Sugar()
 
-	tempDir := t.TempDir()
-	keyfile := filepath.Join(tempDir, "keyfile")
-
-	data := []byte("Great Northern Hotel Room Key")
-	err := os.WriteFile(keyfile, data, 0644)
-	if err != nil {
-		t.Fatalf("error writing file: %v", err)
-	}
-
 	testBucketWithObjects := NewTestBucketWithObjects([]string{
 		"black/lodge/",
 		"black/lodge/1.0.0/",
@@ -158,7 +148,7 @@ func TestProxy(t *testing.T) {
 			ContentType:   "",
 		},
 	})
-	providerData, err := NewS3Backend(testBucketWithObjects, "twin.peaks", keyfile, "315")
+	providerData, err := NewS3Backend(testBucketWithObjects, "twin.peaks")
 	if err != nil {
 		t.Fatalf("error creating providerData: %v", err)
 	}
@@ -186,15 +176,6 @@ func TestRefresh(t *testing.T) {
 	logger.Logger, _ = zap.NewDevelopment()
 	logger.Sugar = logger.Logger.Sugar()
 
-	tempDir := t.TempDir()
-	keyfile := filepath.Join(tempDir, "keyfile")
-
-	data := []byte("Great Northern Hotel Room Key")
-	err := os.WriteFile(keyfile, data, 0644)
-	if err != nil {
-		t.Fatalf("error writing file: %v", err)
-	}
-
 	testBucketWithObjects := NewTestBucketWithObjects([]string{
 		"black/lodge/",
 		"black/lodge/1.0.0/",
@@ -206,7 +187,7 @@ func TestRefresh(t *testing.T) {
 			ContentType:   "",
 		},
 	})
-	providerData, err := NewS3Backend(testBucketWithObjects, "twin.peaks", keyfile, "315")
+	providerData, err := NewS3Backend(testBucketWithObjects, "twin.peaks")
 	if err != nil {
 		t.Fatalf("error creating providerData: %v", err)
 	}
