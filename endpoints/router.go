@@ -36,5 +36,6 @@ func SetupRouter(cacheableProviderData CacheableProviderData) *gin.Engine {
 
 	r.GET("/proxy/:namespace/:type/:version/:filename", Proxy(&providerData))
 	r.GET("/refresh", RefreshHandler(&cache))
+
 	return r
 }
