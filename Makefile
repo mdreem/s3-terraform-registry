@@ -10,6 +10,10 @@ run:
 test:
 	go test -v ./... -covermode=count -coverprofile=coverage.out -coverpkg ./...
 
+
+short_test:
+	go test -short -v ./... -covermode=count -coverprofile=coverage.out -coverpkg ./...
+
 lint:
 	golangci-lint run --config=.github/linters/golangci.yml
 
