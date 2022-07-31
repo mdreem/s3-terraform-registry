@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/mdreem/s3_terraform_registry/common"
 	"github.com/mdreem/s3_terraform_registry/endpoints"
 	"github.com/mdreem/s3_terraform_registry/logger"
@@ -19,23 +18,20 @@ var RootCmd = &cobra.Command{
 }
 
 func runCommand(command *cobra.Command, _ []string) {
-	if handleVersionFlag(command) {
-		return
-	}
 	logger.Sugar.Infow("s3_terraform_registry. ", "Version", Version, "Commit", GitCommit)
 
 	bucketName := common.GetString(command, "bucket-name")
 	hostname := common.GetString(command, "hostname")
+	region := common.GetString(command, "region")
 
-	bucket := s3.New(bucketName)
+	bucket := s3.New(region, bucketName)
 	s3Backend, err := endpoints.NewS3Backend(bucket, hostname)
 	if err != nil {
 		logger.Sugar.Panicw("failed to initialize S3 backend.", "error", err)
 	}
 
 	cache := endpoints.NewCache(s3Backend, bucket)
-	err = cache.Refresh()
-	if err != nil {
+	if err = cache.Refresh(); err != nil {
 		panic(err)
 	}
 
@@ -47,7 +43,7 @@ func runCommand(command *cobra.Command, _ []string) {
 
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Printf("could not execute command: %v", err)
+		logger.Sugar.Errorw("could not execute command. ", "error", err)
 		os.Exit(1)
 	}
 }
@@ -61,8 +57,11 @@ func init() {
 
 	flags.StringP("loglevel", "l", "info", "can be set to `error`, `info`, `debug` to set loglevel.")
 
+	flags.StringP("region", "r", "", "needs to be set to the region. E.g. eu-central-1.")
+
 	markPersistentFlagRequired("bucket-name")
 	markPersistentFlagRequired("hostname")
+	markPersistentFlagRequired("region")
 }
 
 func markPersistentFlagRequired(flagName string) {
@@ -71,14 +70,4 @@ func markPersistentFlagRequired(flagName string) {
 		logger.Sugar.Errorw("unable to set flag to required.", "flag", flagName)
 		os.Exit(1)
 	}
-}
-
-func handleVersionFlag(c *cobra.Command) bool {
-	printVersion := common.GetBoolean(c, "version")
-	if printVersion {
-		fmt.Printf("\nVersion: %s\n", Version)
-		fmt.Printf("Commit:  %s\n", GitCommit)
-		return true
-	}
-	return false
 }

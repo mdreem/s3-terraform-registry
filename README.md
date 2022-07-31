@@ -5,29 +5,7 @@ A simple S3 backed terraform registry
 
 # Usage
 
-`s3_terraform_registry` needs a S3 bucket as a backend. The file structure is as follows:
-
-For every binary there is an additional `shasum` and a `shasum.sig` which signs the `shasum`.
-This signature can be checked with the public key that has to be given.
-```text
-<namespace>/<type>/<version>/<os>/<arch>/<name>.zip
-<namespace>/<type>/<version>/<os>/<arch>/shasum
-<namespace>/<type>/<version>/<os>/<arch>/shasum.sig
-<namespace>/<type>/<version>/<os>/<arch>/key_id
-<namespace>/<type>/<version>/<os>/<arch>/keyfile
-```
-
-## Configuration
-
-The registry is configured via the following flags:
-
-- `bucket-name`: This is the S3 bucket where the files are placed.
-- `hostname`: The hostname under which this registry will be available.
-- `port`: (optional) port the registry will listen on.
-- `keyfile`: The location of the keyfile that is used to check the signature.
-- `key-id`: The ID of the key used to check the signature.
-- `loglevel`: (optional) can be set to `error`, `info`, `debug` to set loglevel.
-# File structure in S3
+`s3_terraform_registry` needs a S3 bucket as a backend. The file structure in S3 is as follows:
 
 For every combination of version, platform and architecture create a zip. Upload it into the respective
 version folder:
@@ -37,5 +15,29 @@ version folder:
 ```
 
 Add a file `<namespace>/<type>/<version>/shasum` containing the sha256 sums of the zip-files. Also add
-a file `<namespace>/<type>/<version>/shasum.sig`, which is the signature of the shasum-file. The public key
-data to check this signature is set via the environment variables `KEYFILE` and `KEY_ID`.
+a file `<namespace>/<type>/<version>/shasum.sig`, which is the signature of the shasum-file.
+
+Add the keyfile called `keyfile` which contains the public key used to create `shasum.sig` and put the key id
+in the fil `key_id`.
+
+At minimum the one provider version would consist of the following files in S3:
+
+```text
+<namespace>/<type>/<version>/<name>_<version>_<os>_<arch>.zip
+<namespace>/<type>/<version>/shasum
+<namespace>/<type>/<version>/shasum.sig
+<namespace>/<type>/<version>/keyfile
+<namespace>/<type>/<version>/key_id
+```
+
+`<name>` should not contain any underscore because the file will not be found in that case.
+
+## Configuration
+
+The registry is configured via the following flags:
+
+- `bucket-name`: This is the S3 bucket where the files are placed.
+- `hostname`: The hostname under which this registry will be available.
+- `region`: Needs to be set to the region where the bucket resides in. E.g. eu-central-1.
+- `port`: (optional) port the registry will listen on.
+- `loglevel`: (optional) can be set to `error`, `info`, `debug` to set loglevel.

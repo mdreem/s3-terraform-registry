@@ -2,8 +2,8 @@ package s3
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/mdreem/s3_terraform_registry/logger"
 	"io"
 )
 
@@ -18,15 +18,19 @@ type BucketObject struct {
 }
 
 func (bucket Bucket) GetObject(key string) (BucketObject, error) {
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("eu-central-1"),
-	}))
+	sess := CreateSession(bucket.region)
 	svc := s3.New(sess)
 
 	object, err := svc.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket.bucketName),
 		Key:    aws.String(key),
 	})
+
+	if err != nil {
+		logger.Sugar.Errorw("an error occurred when getting object", "error", err)
+		return BucketObject{}, err
+	}
+
 	return BucketObject{
 		Body:          object.Body,
 		ContentLength: *object.ContentLength,
