@@ -13,7 +13,7 @@ import (
 	registryS3 "github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -172,7 +172,7 @@ func getURL(t *testing.T, url string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func runRegistry(t *testing.T) {
 	}
 }
 
-//nolint: unparam
+//nolint: unparam, gofmt
 func createProvider(t *testing.T, sess *session.Session, namespace, providerType, version, os, arch, name string) {
 	path := fmt.Sprintf("%s/%s/%s/", namespace, providerType, version)
 	zipFileName := fmt.Sprintf("%s_%s_%s_%s.zip", name, version, os, arch)
