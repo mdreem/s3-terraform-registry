@@ -3,7 +3,7 @@ module github.com/mdreem/s3_terraform_registry
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.44.100
+	github.com/aws/aws-sdk-go v1.44.114
 	github.com/docker/go-connections v0.4.0
 	github.com/gin-contrib/zap v0.1.0
 	github.com/gin-gonic/gin v1.8.1
