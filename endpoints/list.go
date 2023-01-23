@@ -5,7 +5,7 @@ import (
 	"github.com/mdreem/s3_terraform_registry/logger"
 )
 
-func ListVersions(providerData *ProviderData) func(c *gin.Context) {
+func listVersions(providerData *ProviderData) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		namespace := c.Param("namespace")
 		providerType := c.Param("type")

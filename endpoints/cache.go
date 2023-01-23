@@ -13,18 +13,16 @@ type Cache interface {
 	Refresh() error
 }
 
-type S3ProviderData struct {
-	providerData ProviderData
-	cachedResult cachedResult
-	bucket       s3.ListObjects
-}
-
 func NewCache(client ProviderData, bucketReader s3.ListObjects) CacheableProviderData {
 	return &S3ProviderData{
 		providerData: client,
 		cachedResult: cachedResult{},
 		bucket:       bucketReader,
 	}
+}
+
+type cachedResult struct {
+	versions map[string]map[string]schema.ProviderVersions
 }
 
 func (cache S3ProviderData) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
@@ -38,10 +36,6 @@ func (cache S3ProviderData) ListVersions(namespace string, providerType string) 
 		return schema.ProviderVersions{}, fmt.Errorf("unable to find data for type %s", providerType)
 	}
 	return providerData, nil
-}
-
-type cachedResult struct {
-	versions map[string]map[string]schema.ProviderVersions
 }
 
 func (cache S3ProviderData) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
@@ -94,7 +88,7 @@ func (cache *S3ProviderData) Refresh() error {
 	return nil
 }
 
-func RefreshHandler(cache *Cache) func(c *gin.Context) {
+func refreshHandler(cache *Cache) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		logger.Sugar.Infow("refreshing cache")
 

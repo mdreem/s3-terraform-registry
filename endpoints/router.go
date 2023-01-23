@@ -29,13 +29,13 @@ func SetupRouter(cacheableProviderData CacheableProviderData) *gin.Engine {
 	r.Use(ginzap.Ginzap(logger.Logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logger.Logger, true))
 
-	r.GET("/.well-known/terraform.json", Discovery())
+	r.GET("/.well-known/terraform.json", discovery())
 
-	r.GET("/v1/providers/:namespace/:type/versions", ListVersions(&providerData))
-	r.GET("/v1/providers/:namespace/:type/:version/download/:os/:arch", GetDownloadData(&providerData))
+	r.GET("/v1/providers/:namespace/:type/versions", listVersions(&providerData))
+	r.GET("/v1/providers/:namespace/:type/:version/download/:os/:arch", getDownloadData(&providerData))
 
-	r.GET("/proxy/:namespace/:type/:version/:filename", Proxy(&providerData))
-	r.GET("/refresh", RefreshHandler(&cache))
+	r.GET("/proxy/:namespace/:type/:version/:filename", proxy(&providerData))
+	r.GET("/refresh", refreshHandler(&cache))
 
 	return r
 }

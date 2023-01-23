@@ -205,11 +205,11 @@ func TestS3ProviderData_ListVersions(t *testing.T) {
 			}
 			got, err := cache.ListVersions(tt.args.namespace, tt.args.providerType)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ListVersions() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("listVersions() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ListVersions() got = %v, want %v", got, tt.want)
+				t.Errorf("listVersions() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

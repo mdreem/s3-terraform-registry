@@ -3,9 +3,16 @@ package endpoints
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/mdreem/s3_terraform_registry/logger"
+	"io"
 )
 
-func Proxy(providerData *ProviderData) func(c *gin.Context) {
+type ProxyResponse struct {
+	Body          io.ReadCloser
+	ContentLength int64
+	ContentType   string
+}
+
+func proxy(providerData *ProviderData) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		namespace := c.Param("namespace")
 		providerType := c.Param("type")

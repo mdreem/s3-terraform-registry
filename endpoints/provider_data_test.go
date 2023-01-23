@@ -101,11 +101,11 @@ func TestRegistryClient_GetDownloadData(t *testing.T) {
 			}
 			got, err := client.GetDownloadData(tt.args.namespace, tt.args.providerType, tt.args.version, tt.args.os, tt.args.arch)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDownloadData() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("getDownloadData() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetDownloadData() got = %v, want %v", got, tt.want)
+				t.Errorf("getDownloadData() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -179,11 +179,11 @@ func TestRegistryClient_ListVersions(t *testing.T) {
 			}
 			got, err := client.ListVersions(tt.args.namespace, tt.args.providerType)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ListVersions() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("listVersions() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ListVersions() got = %v, want %v", got, tt.want)
+				t.Errorf("listVersions() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -249,11 +249,11 @@ func TestRegistryClient_Proxy(t *testing.T) {
 			}
 			got, err := client.Proxy(tt.args.namespace, tt.args.providerType, tt.args.version, tt.args.filename)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Proxy() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("proxy() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Proxy() got = %v, want %v", got, tt.want)
+				t.Errorf("proxy() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

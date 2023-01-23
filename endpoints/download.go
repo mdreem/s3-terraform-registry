@@ -5,7 +5,7 @@ import (
 	"github.com/mdreem/s3_terraform_registry/logger"
 )
 
-func GetDownloadData(providerData *ProviderData) func(c *gin.Context) {
+func getDownloadData(providerData *ProviderData) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		namespace := c.Param("namespace")
 		providerType := c.Param("type")

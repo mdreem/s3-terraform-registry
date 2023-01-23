@@ -6,16 +6,15 @@ import (
 	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
-	"io"
 	"regexp"
 	"sort"
 	"strings"
 )
 
-type ProxyResponse struct {
-	Body          io.ReadCloser
-	ContentLength int64
-	ContentType   string
+type S3ProviderData struct {
+	providerData ProviderData
+	cachedResult cachedResult
+	bucket       s3.ListObjects
 }
 
 type ProviderData interface {
