@@ -3,7 +3,7 @@ module github.com/mdreem/s3_terraform_registry
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go v1.44.100
+	github.com/aws/aws-sdk-go v1.44.184
 	github.com/docker/go-connections v0.4.0
 	github.com/gin-contrib/zap v0.1.0
 	github.com/gin-gonic/gin v1.8.1
@@ -55,7 +55,7 @@ require (
 	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
-	golang.org/x/net v0.0.0-20220906165146-f3363e06e74c // indirect
+	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20220617124728-180714bec0ad // indirect
