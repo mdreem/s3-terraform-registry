@@ -2,7 +2,9 @@ package endpoints
 
 import (
 	"encoding/json"
+	"github.com/mdreem/s3_terraform_registry/internal/testsupport"
 	"github.com/mdreem/s3_terraform_registry/logger"
+	"github.com/mdreem/s3_terraform_registry/providerdata"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
 	"go.uber.org/zap"
@@ -16,7 +18,7 @@ func TestGetVersions(t *testing.T) {
 	logger.Logger, _ = zap.NewDevelopment()
 	logger.Sugar = logger.Logger.Sugar()
 
-	testBucketWithObjects := NewTestBucketWithObjects([]string{
+	testBucketWithObjects := testsupport.NewTestBucketWithObjects([]string{
 		"black/lodge/",
 		"black/lodge/1.0.0/",
 	}, nil)
@@ -63,28 +65,28 @@ func TestGetDownloadData(t *testing.T) {
 	logger.Logger, _ = zap.NewDevelopment()
 	logger.Sugar = logger.Logger.Sugar()
 
-	testBucketWithObjects := NewTestBucketWithObjects([]string{
+	testBucketWithObjects := testsupport.NewTestBucketWithObjects([]string{
 		"black/lodge/",
 		"black/lodge/1.0.0/",
 		"black/lodge/1.0.1/",
 	}, map[string]s3.BucketObject{
 		"black/lodge/1.0.1/shasum": {
-			Body:          createReaderFor("sha315 coffee"),
+			Body:          testsupport.CreateReaderFor("sha315 coffee"),
 			ContentLength: 0,
 			ContentType:   "",
 		},
 		"black/lodge/1.0.1/key_id": {
-			Body:          createReaderFor("315"),
+			Body:          testsupport.CreateReaderFor("315"),
 			ContentLength: 0,
 			ContentType:   "",
 		},
 		"black/lodge/1.0.1/keyfile": {
-			Body:          createReaderFor("Great Northern Hotel Room Key"),
+			Body:          testsupport.CreateReaderFor("Great Northern Hotel Room Key"),
 			ContentLength: 0,
 			ContentType:   "",
 		},
 	})
-	providerData, err := NewS3Backend(testBucketWithObjects, "twin.peaks")
+	providerData, err := providerdata.NewS3Backend(testBucketWithObjects, "twin.peaks")
 	if err != nil {
 		t.Fatalf("error creating providerData: %v", err)
 	}
@@ -137,18 +139,18 @@ func TestProxy(t *testing.T) {
 	logger.Logger, _ = zap.NewDevelopment()
 	logger.Sugar = logger.Logger.Sugar()
 
-	testBucketWithObjects := NewTestBucketWithObjects([]string{
+	testBucketWithObjects := testsupport.NewTestBucketWithObjects([]string{
 		"black/lodge/",
 		"black/lodge/1.0.0/",
 		"black/lodge/1.0.1/",
 	}, map[string]s3.BucketObject{
 		"black/lodge/1.0.1/terraform-provider-lodge_1.0.1_linux_amd64.zip": {
-			Body:          createReaderFor("315 coffee provider"),
+			Body:          testsupport.CreateReaderFor("315 coffee provider"),
 			ContentLength: 0,
 			ContentType:   "",
 		},
 	})
-	providerData, err := NewS3Backend(testBucketWithObjects, "twin.peaks")
+	providerData, err := providerdata.NewS3Backend(testBucketWithObjects, "twin.peaks")
 	if err != nil {
 		t.Fatalf("error creating providerData: %v", err)
 	}
@@ -176,18 +178,18 @@ func TestRefresh(t *testing.T) {
 	logger.Logger, _ = zap.NewDevelopment()
 	logger.Sugar = logger.Logger.Sugar()
 
-	testBucketWithObjects := NewTestBucketWithObjects([]string{
+	testBucketWithObjects := testsupport.NewTestBucketWithObjects([]string{
 		"black/lodge/",
 		"black/lodge/1.0.0/",
 		"black/lodge/1.0.1/",
 	}, map[string]s3.BucketObject{
 		"black/lodge/1.0.1/terraform-provider-lodge_1.0.1_linux_amd64.zip": {
-			Body:          createReaderFor("315 coffee provider"),
+			Body:          testsupport.CreateReaderFor("315 coffee provider"),
 			ContentLength: 0,
 			ContentType:   "",
 		},
 	})
-	providerData, err := NewS3Backend(testBucketWithObjects, "twin.peaks")
+	providerData, err := providerdata.NewS3Backend(testBucketWithObjects, "twin.peaks")
 	if err != nil {
 		t.Fatalf("error creating providerData: %v", err)
 	}

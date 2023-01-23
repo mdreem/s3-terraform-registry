@@ -4,16 +4,17 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/mdreem/s3_terraform_registry/logger"
+	"github.com/mdreem/s3_terraform_registry/providerdata"
 	"time"
 )
 
 type CacheableProviderData interface {
-	ProviderData
+	providerdata.ProviderData
 	Cache
 }
 
 func SetupRouter(cacheableProviderData CacheableProviderData) *gin.Engine {
-	providerData, ok := cacheableProviderData.(ProviderData)
+	providerData, ok := cacheableProviderData.(providerdata.ProviderData)
 	if !ok {
 		logger.Sugar.Panicw("unable to cast to ProviderData.")
 	}

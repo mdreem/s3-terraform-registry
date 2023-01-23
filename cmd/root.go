@@ -4,6 +4,7 @@ import (
 	"github.com/mdreem/s3_terraform_registry/common"
 	"github.com/mdreem/s3_terraform_registry/endpoints"
 	"github.com/mdreem/s3_terraform_registry/logger"
+	"github.com/mdreem/s3_terraform_registry/providerdata"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/spf13/cobra"
 	"os"
@@ -25,7 +26,7 @@ func runCommand(command *cobra.Command, _ []string) {
 	region := common.GetString(command, "region")
 
 	bucket := s3.New(region, bucketName)
-	s3Backend, err := endpoints.NewS3Backend(bucket, hostname)
+	s3Backend, err := providerdata.NewS3Backend(bucket, hostname)
 	if err != nil {
 		logger.Sugar.Panicw("failed to initialize S3 backend.", "error", err)
 	}

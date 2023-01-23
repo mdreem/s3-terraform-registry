@@ -14,11 +14,12 @@ linters:
     - nolintlint
     - rowserrcheck
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
     - unparam
-    - varcheck
     - whitespace
     - unused
+run:
+  build-tags:
+    testing

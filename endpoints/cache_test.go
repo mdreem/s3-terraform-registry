@@ -3,12 +3,12 @@ package endpoints
 import (
 	"errors"
 	"fmt"
+	"github.com/mdreem/s3_terraform_registry/internal/testsupport"
 	"github.com/mdreem/s3_terraform_registry/logger"
+	"github.com/mdreem/s3_terraform_registry/providerdata"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
-	"io"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -26,39 +26,6 @@ func errorBucketContent() []string {
 		"ERROR_PROVIDER/some_type/1.0.0/",
 		"ERROR_PROVIDER/some_type/1.0.0/linux/amd64/terraform-provider-test_1.0.0_linux_amd64.zip",
 	}
-}
-
-type TestBucket struct {
-	entries []string
-	objects map[string]s3.BucketObject
-}
-
-func NewTestBucket(entries []string) TestBucket {
-	return TestBucket{entries: entries}
-}
-
-func NewTestBucketWithObjects(entries []string, objects map[string]s3.BucketObject) TestBucket {
-	return TestBucket{entries: entries, objects: objects}
-}
-
-func (bucket TestBucket) ListObjects() ([]string, error) {
-	return bucket.entries, nil
-}
-
-func (bucket TestBucket) GetObject(key string) (s3.BucketObject, error) {
-	object, ok := bucket.objects[key]
-	if ok {
-		return object, nil
-	}
-
-	stringReader := strings.NewReader("Object Data for: " + key)
-	stringReadCloser := io.NopCloser(stringReader)
-
-	return s3.BucketObject{
-		Body:          stringReadCloser,
-		ContentLength: int64(len(key)),
-		ContentType:   "ContentType: " + key,
-	}, nil
 }
 
 func NewTestProviderData() TestProviderData {
@@ -94,8 +61,8 @@ func (t TestProviderData) GetDownloadData(namespace string, providerType string,
 	return schema.DownloadData{}, nil
 }
 
-func (t TestProviderData) Proxy(namespace string, providerType string, version string, filename string) (ProxyResponse, error) {
-	return ProxyResponse{}, nil
+func (t TestProviderData) Proxy(namespace string, providerType string, version string, filename string) (schema.ProxyResponse, error) {
+	return schema.ProxyResponse{}, nil
 }
 
 func defaultVersions() map[string]map[string]schema.ProviderVersions {
@@ -148,7 +115,7 @@ func listVersionsData() map[string]map[string]schema.ProviderVersions {
 
 func TestS3ProviderData_ListVersions(t *testing.T) {
 	type fields struct {
-		providerData ProviderData
+		providerData providerdata.ProviderData
 		cachedResult cachedResult
 		bucket       s3.ListObjects
 	}
@@ -198,7 +165,7 @@ func TestS3ProviderData_ListVersions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cache := S3ProviderData{
+			cache := s3ProviderData{
 				providerData: tt.fields.providerData,
 				cachedResult: tt.fields.cachedResult,
 				bucket:       tt.fields.bucket,
@@ -217,7 +184,7 @@ func TestS3ProviderData_ListVersions(t *testing.T) {
 
 func TestS3ProviderData_Refresh(t *testing.T) {
 	type fields struct {
-		providerData ProviderData
+		providerData providerdata.ProviderData
 		cachedResult cachedResult
 		bucket       s3.ListObjects
 	}
@@ -234,7 +201,7 @@ func TestS3ProviderData_Refresh(t *testing.T) {
 				cachedResult: cachedResult{
 					versions: defaultVersions(),
 				},
-				bucket: NewTestBucket(defaultBucketContent()),
+				bucket: testsupport.NewTestBucket(defaultBucketContent()),
 			},
 			wantErr: false,
 			wantCachedResult: cachedResult{
@@ -265,7 +232,7 @@ func TestS3ProviderData_Refresh(t *testing.T) {
 				cachedResult: cachedResult{
 					versions: defaultVersions(),
 				},
-				bucket: NewTestBucket(errorBucketContent()),
+				bucket: testsupport.NewTestBucket(errorBucketContent()),
 			},
 			wantErr: true,
 			wantCachedResult: cachedResult{
@@ -275,7 +242,7 @@ func TestS3ProviderData_Refresh(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cache := S3ProviderData{
+			cache := s3ProviderData{
 				providerData: tt.fields.providerData,
 				cachedResult: tt.fields.cachedResult,
 				bucket:       tt.fields.bucket,

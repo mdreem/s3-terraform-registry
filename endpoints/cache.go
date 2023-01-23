@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mdreem/s3_terraform_registry/logger"
+	"github.com/mdreem/s3_terraform_registry/providerdata"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
 	"regexp"
@@ -13,19 +14,25 @@ type Cache interface {
 	Refresh() error
 }
 
-func NewCache(client ProviderData, bucketReader s3.ListObjects) CacheableProviderData {
-	return &S3ProviderData{
-		providerData: client,
-		cachedResult: cachedResult{},
-		bucket:       bucketReader,
-	}
+type s3ProviderData struct {
+	providerData providerdata.ProviderData
+	cachedResult cachedResult
+	bucket       s3.ListObjects
 }
 
 type cachedResult struct {
 	versions map[string]map[string]schema.ProviderVersions
 }
 
-func (cache S3ProviderData) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
+func NewCache(client providerdata.ProviderData, bucketReader s3.ListObjects) CacheableProviderData {
+	return &s3ProviderData{
+		providerData: client,
+		cachedResult: cachedResult{},
+		bucket:       bucketReader,
+	}
+}
+
+func (cache s3ProviderData) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
 	namespaceData, ok := cache.cachedResult.versions[namespace]
 	if !ok {
 		return schema.ProviderVersions{}, fmt.Errorf("unable to find data for namespace %s", namespace)
@@ -38,15 +45,15 @@ func (cache S3ProviderData) ListVersions(namespace string, providerType string) 
 	return providerData, nil
 }
 
-func (cache S3ProviderData) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
+func (cache s3ProviderData) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
 	return cache.providerData.GetDownloadData(namespace, providerType, version, os, arch)
 }
 
-func (cache S3ProviderData) Proxy(namespace string, providerType string, version string, os string) (ProxyResponse, error) {
+func (cache s3ProviderData) Proxy(namespace string, providerType string, version string, os string) (schema.ProxyResponse, error) {
 	return cache.providerData.Proxy(namespace, providerType, version, os)
 }
 
-func (cache *S3ProviderData) Refresh() error {
+func (cache *s3ProviderData) Refresh() error {
 	r := regexp.MustCompile(`^(?P<namespace>[^/]*)/(?P<type>[^/]*)/`)
 	names := r.SubexpNames()
 

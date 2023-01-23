@@ -1,19 +1,12 @@
-package endpoints
+package providerdata
 
 import (
+	test_support "github.com/mdreem/s3_terraform_registry/internal/testsupport"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
-	"io"
 	"reflect"
-	"strings"
 	"testing"
 )
-
-func createReaderFor(content string) io.ReadCloser {
-	stringReader := strings.NewReader(content)
-	stringReadCloser := io.NopCloser(stringReader)
-	return stringReadCloser
-}
 
 func TestRegistryClient_GetDownloadData(t *testing.T) {
 	type fields struct {
@@ -39,19 +32,19 @@ func TestRegistryClient_GetDownloadData(t *testing.T) {
 		{
 			name: "get download data",
 			fields: fields{
-				bucket: NewTestBucketWithObjects([]string{}, map[string]s3.BucketObject{
+				bucket: test_support.NewTestBucketWithObjects([]string{}, map[string]s3.BucketObject{
 					"black/lodge/1.0.1/shasum": {
-						Body:          createReaderFor("315 coffee"),
+						Body:          test_support.CreateReaderFor("315 coffee"),
 						ContentLength: 0,
 						ContentType:   "",
 					},
 					"black/lodge/1.0.1/key_id": {
-						Body:          createReaderFor("315"),
+						Body:          test_support.CreateReaderFor("315"),
 						ContentLength: 0,
 						ContentType:   "",
 					},
 					"black/lodge/1.0.1/keyfile": {
-						Body:          createReaderFor("Great Northern Hotel Room Key"),
+						Body:          test_support.CreateReaderFor("Great Northern Hotel Room Key"),
 						ContentLength: 0,
 						ContentType:   "",
 					},
@@ -130,7 +123,7 @@ func TestRegistryClient_ListVersions(t *testing.T) {
 		{
 			name: "list versions based on S3 content",
 			fields: fields{
-				bucket: NewTestBucket([]string{
+				bucket: test_support.NewTestBucket([]string{
 					"black/lodge/1.0.0/provider_1.0.0_linux_amd64.zip",
 					"black/lodge/1.0.1/provider_1.0.1_linux_amd64.zip",
 					"black/lodge/1.0.1/provider_1.0.1_windows_amd64.zip",
@@ -208,15 +201,15 @@ func TestRegistryClient_Proxy(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    ProxyResponse
+		want    schema.ProxyResponse
 		wantErr bool
 	}{
 		{
 			name: "proxy returns file",
 			fields: fields{
-				bucket: NewTestBucketWithObjects([]string{}, map[string]s3.BucketObject{
+				bucket: test_support.NewTestBucketWithObjects([]string{}, map[string]s3.BucketObject{
 					"black/lodge/1.0.1/provider_1.0.1_linux_amd64.zip": {
-						Body:          createReaderFor("315 coffee"),
+						Body:          test_support.CreateReaderFor("315 coffee"),
 						ContentLength: 253,
 						ContentType:   "Lodge Response",
 					},
@@ -233,8 +226,8 @@ func TestRegistryClient_Proxy(t *testing.T) {
 				arch:         "amd64",
 				filename:     "provider_1.0.1_linux_amd64.zip",
 			},
-			want: ProxyResponse{
-				Body:          createReaderFor("315 coffee"),
+			want: schema.ProxyResponse{
+				Body:          test_support.CreateReaderFor("315 coffee"),
 				ContentLength: 253,
 				ContentType:   "Lodge Response",
 			},
