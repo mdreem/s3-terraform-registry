@@ -10,7 +10,6 @@ run:
 test:
 	go test -tags testing -v ./... -covermode=count -coverprofile=coverage.out -coverpkg ./...
 
-
 short_test:
 	go test -tags testing -short -v ./... -covermode=count -coverprofile=coverage.out -coverpkg ./...
 

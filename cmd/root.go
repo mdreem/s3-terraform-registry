@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/mdreem/s3_terraform_registry/cache"
 	"github.com/mdreem/s3_terraform_registry/common"
 	"github.com/mdreem/s3_terraform_registry/endpoints"
 	"github.com/mdreem/s3_terraform_registry/logger"
@@ -31,7 +32,7 @@ func runCommand(command *cobra.Command, _ []string) {
 		logger.Sugar.Panicw("failed to initialize S3 backend.", "error", err)
 	}
 
-	cache := endpoints.NewCache(s3Backend, bucket)
+	cache := cache.NewCache(s3Backend, bucket)
 	if err = cache.Refresh(); err != nil {
 		panic(err)
 	}

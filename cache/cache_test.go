@@ -1,10 +1,8 @@
-package endpoints
+package cache
 
 import (
-	"errors"
 	"fmt"
 	"github.com/mdreem/s3_terraform_registry/internal/testsupport"
-	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/providerdata"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
@@ -26,43 +24,6 @@ func errorBucketContent() []string {
 		"ERROR_PROVIDER/some_type/1.0.0/",
 		"ERROR_PROVIDER/some_type/1.0.0/linux/amd64/terraform-provider-test_1.0.0_linux_amd64.zip",
 	}
-}
-
-func NewTestProviderData() TestProviderData {
-	return TestProviderData{}
-}
-
-type TestProviderData struct {
-}
-
-func (t TestProviderData) ListVersions(namespace string, providerType string) (schema.ProviderVersions, error) {
-	logger.Sugar.Infow("listing versions", "namespace", namespace, "type", providerType)
-	if namespace == "ERROR_PROVIDER" {
-		return schema.ProviderVersions{}, errors.New("some error occurred")
-	}
-
-	return schema.ProviderVersions{
-		ID: namespace,
-		Versions: []schema.ProviderVersion{
-			{
-				Version:   "1.0.0",
-				Protocols: []string{"4.0", "5.0"},
-				Platforms: []schema.Platform{{
-					Os:   "linux",
-					Arch: "amd64",
-				}},
-			},
-		},
-		Warnings: nil,
-	}, nil
-}
-
-func (t TestProviderData) GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error) {
-	return schema.DownloadData{}, nil
-}
-
-func (t TestProviderData) Proxy(namespace string, providerType string, version string, filename string) (schema.ProxyResponse, error) {
-	return schema.ProxyResponse{}, nil
 }
 
 func defaultVersions() map[string]map[string]schema.ProviderVersions {
@@ -197,7 +158,7 @@ func TestS3ProviderData_Refresh(t *testing.T) {
 		{
 			name: "test refreshing data in bucket",
 			fields: fields{
-				providerData: NewTestProviderData(),
+				providerData: testsupport.NewTestProviderData(),
 				cachedResult: cachedResult{
 					versions: defaultVersions(),
 				},
@@ -228,7 +189,7 @@ func TestS3ProviderData_Refresh(t *testing.T) {
 		{
 			name: "test refreshing data in bucket",
 			fields: fields{
-				providerData: NewTestProviderData(),
+				providerData: testsupport.NewTestProviderData(),
 				cachedResult: cachedResult{
 					versions: defaultVersions(),
 				},

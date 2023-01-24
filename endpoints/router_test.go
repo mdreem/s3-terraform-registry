@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"encoding/json"
+	"github.com/mdreem/s3_terraform_registry/cache"
 	"github.com/mdreem/s3_terraform_registry/internal/testsupport"
 	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/providerdata"
@@ -22,8 +23,8 @@ func TestGetVersions(t *testing.T) {
 		"black/lodge/",
 		"black/lodge/1.0.0/",
 	}, nil)
-	providerData := NewTestProviderData()
-	cache := NewCache(providerData, testBucketWithObjects)
+	providerData := testsupport.NewTestProviderData()
+	cache := cache.NewCache(providerData, testBucketWithObjects)
 	err := cache.Refresh()
 	if err != nil {
 		t.Fatalf("error refreshing cache: %v", err)
@@ -90,7 +91,7 @@ func TestGetDownloadData(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error creating providerData: %v", err)
 	}
-	cache := NewCache(providerData, testBucketWithObjects)
+	cache := cache.NewCache(providerData, testBucketWithObjects)
 	err = cache.Refresh()
 	if err != nil {
 		t.Fatalf("error refreshing cache: %v", err)
@@ -154,7 +155,7 @@ func TestProxy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error creating providerData: %v", err)
 	}
-	cache := NewCache(providerData, testBucketWithObjects)
+	cache := cache.NewCache(providerData, testBucketWithObjects)
 	err = cache.Refresh()
 	if err != nil {
 		t.Fatalf("error refreshing cache: %v", err)
@@ -193,7 +194,7 @@ func TestRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error creating providerData: %v", err)
 	}
-	cache := NewCache(providerData, testBucketWithObjects)
+	cache := cache.NewCache(providerData, testBucketWithObjects)
 
 	_, err = cache.ListVersions("black", "lodge")
 	if err == nil {
