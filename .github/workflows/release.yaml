@@ -51,3 +51,11 @@ jobs:
           asset_name: s3_terraform_registry-linux-amd64
           asset_content_type: application/octet-stream
 
+      - name: Build image
+        run: make docker_build
+
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Push image
+        run: docker_push
