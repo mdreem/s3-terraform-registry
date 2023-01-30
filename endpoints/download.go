@@ -3,9 +3,10 @@ package endpoints
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/mdreem/s3_terraform_registry/logger"
+	"github.com/mdreem/s3_terraform_registry/providerdata"
 )
 
-func GetDownloadData(providerData *ProviderData) func(c *gin.Context) {
+func getDownloadData(providerData *providerdata.ProviderData) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		namespace := c.Param("namespace")
 		providerType := c.Param("type")

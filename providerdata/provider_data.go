@@ -1,4 +1,4 @@
-package endpoints
+package providerdata
 
 import (
 	"bytes"
@@ -6,22 +6,15 @@ import (
 	"github.com/mdreem/s3_terraform_registry/logger"
 	"github.com/mdreem/s3_terraform_registry/s3"
 	"github.com/mdreem/s3_terraform_registry/schema"
-	"io"
 	"regexp"
 	"sort"
 	"strings"
 )
 
-type ProxyResponse struct {
-	Body          io.ReadCloser
-	ContentLength int64
-	ContentType   string
-}
-
 type ProviderData interface {
 	ListVersions(namespace string, providerType string) (schema.ProviderVersions, error)
 	GetDownloadData(namespace string, providerType string, version string, os string, arch string) (schema.DownloadData, error)
-	Proxy(namespace string, providerType string, version string, os string) (ProxyResponse, error)
+	Proxy(namespace string, providerType string, version string, os string) (schema.ProxyResponse, error)
 }
 
 type RegistryClient struct {
@@ -170,16 +163,16 @@ func (client RegistryClient) fetchObjectAsString(objectLocation string) (string,
 	return buf.String(), nil
 }
 
-func (client RegistryClient) Proxy(namespace string, providerType string, version string, filename string) (ProxyResponse, error) {
+func (client RegistryClient) Proxy(namespace string, providerType string, version string, filename string) (schema.ProxyResponse, error) {
 	basePath := fmt.Sprintf("%s/%s/%s", namespace, providerType, version)
 	logger.Sugar.Infow("proxying file file", "file", fmt.Sprintf("%s/%s", basePath, filename))
 
 	object, err := client.bucket.GetObject(fmt.Sprintf("%s/%s", basePath, filename))
 	if err != nil {
-		return ProxyResponse{}, err
+		return schema.ProxyResponse{}, err
 	}
 
-	return ProxyResponse{
+	return schema.ProxyResponse{
 		Body:          object.Body,
 		ContentLength: object.ContentLength,
 		ContentType:   object.ContentType,
