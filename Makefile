@@ -21,3 +21,9 @@ clean:
 
 compile:
 	GOOS=linux GOARCH=amd64 go build -ldflags="-X 'main.Version=$(VERSION)' -X 'main.GitCommit=$(COMMIT)'" -o bin/linux-amd64/s3_terraform_registry main.go
+
+docker_build:
+	docker build . -f docker/Dockerfile -t ghcr.io/mdreem/terraform-registry:${VERSION}
+
+docker_push:
+	docker push ghcr.io/mdreem/terraform-registry:${VERSION}
